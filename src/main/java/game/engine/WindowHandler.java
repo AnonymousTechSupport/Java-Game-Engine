@@ -100,6 +100,11 @@ public class WindowHandler {
     isRunning = false;
   }
 
+  /** Show or hide the OS cursor. */
+  public void setCursorHidden(boolean hidden) {
+    glfwSetInputMode(handle, GLFW_CURSOR, hidden ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+  }
+
   // Getters for window properties
   public long getHandle() { return handle; }
   public int getWidth() { return width; }

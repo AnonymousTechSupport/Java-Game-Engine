@@ -30,7 +30,7 @@ public class World {
         this.balls = new ComponentManager<>();
 
         this.renderingSystem = new RenderingSystem(transforms, rectangles, balls);
-        Logger.info(Logger.WORLD, "World created and systems initialized.");
+        Logger.info(Logger.WORLD, "World created and systems initialised.");
     }
 
     /** Create a couple demo entities to exercise rendering. */
@@ -50,5 +50,21 @@ public class World {
     public void render(Renderer renderer) {
         Logger.trace(Logger.WORLD, "World render step initiated.");
         renderingSystem.renderAll(renderer);
+    }
+
+    public void update(float dt) {
+        // TODO: Update game logic, e.g., physics, AI
+        // no implementatin for now, but this is where it would go
+    }
+
+    /**
+     * Remove all components associated with the given entity id.
+     * Centralizes component cleanup so callers can fully destroy an entity.
+     */
+    public void removeAllComponents(int entityId) {
+        transforms.remove(entityId);
+        rectangles.remove(entityId);
+        balls.remove(entityId);
+        Logger.debug(Logger.WORLD, () -> "Completed component cleanup for entity " + entityId);
     }
 }

@@ -19,9 +19,11 @@ public class InputManager {
     private final long windowHandle;
     private final GLFWKeyCallbackI callback;
     private final KeyboardState keyboard = new KeyboardState(Key.COUNT);
+    private final game.engine.StateManager stateManager;
 
-    public InputManager(long windowHandle) {
+    public InputManager(long windowHandle, game.engine.StateManager stateManager) {
         this.windowHandle = windowHandle;
+        this.stateManager = stateManager;
         this.callback = (win, key, scancode, action, mods) -> onKeyEvent(win, key, scancode, action, mods);
 
         GLFW.glfwSetKeyCallback(windowHandle, callback);
@@ -44,13 +46,36 @@ public class InputManager {
     public void clearAll() { keyboard.clearAll(); }
 
     public void onKeyEvent(long win, int keyCode, int scancode, int action, int mods) {
+        // Highest priority: state transitions
+        if (action == GLFW.GLFW_PRESS) {
+            if (keyCode == GLFW.GLFW_KEY_E) {
+                // toggle editor
+                if (stateManager.isEditor()) stateManager.setState(game.engine.EngineState.PLAYING);
+                else stateManager.setState(game.engine.EngineState.EDITOR);
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                // If we're in the editor, ESC should first exit the editor and return to PLAYING
+                // instead of toggling PAUSED. From PLAYING, ESC will still toggle PAUSED as expected.
+                if (stateManager.isEditor()) {
+                    stateManager.setState(game.engine.EngineState.PLAYING);
+                } else if (stateManager.isPaused()) {
+                    stateManager.setState(game.engine.EngineState.PLAYING);
+                } else {
+                    stateManager.setState(game.engine.EngineState.PAUSED);
+                }
+                return;
+            }
+        }
+
+        // If UI wants keyboard (e.g., in editor), consume
+        if ((stateManager.isEditor() || stateManager.isPaused()) && imgui.ImGui.getIO().getWantCaptureKeyboard()) {
+            return;
+        }
+
         Key k = Key.fromKeyCode(keyCode);
         if (k != null) {
             keyboard.setDownIndex(k.getIndex(), action == GLFW.GLFW_PRESS || action == GLFW.GLFW_REPEAT);
-        }
-
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE && (action == GLFW.GLFW_PRESS || action == GLFW.GLFW_RELEASE)) {
-            GLFW.glfwSetWindowShouldClose(win, true);
         }
     }
 }

@@ -1,37 +1,37 @@
 package game.engine.LevelEditor;
 
-import imgui.ImGui;
-import imgui.gl3.ImGuiImplGl3;
-import imgui.glfw.ImGuiImplGlfw;
+import game.engine.EntityRegistry;
+import game.engine.ui.ImGuiLayer;
+import game.engine.ui.UIManager;
 
+/**
+ * The main class for the Level Editor UI.
+ * This class is responsible for initializing and managing the ImGui layer and the UIManager.
+ */
 public class LevelEditor {
-    private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
-    private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
-    
-    public LevelEditor(long glfwWindow) {
-        ImGui.createContext();
-        imGuiGlfw.init(glfwWindow, true);
-        imGuiGl3.init("#version 330");
+    private final ImGuiLayer imGuiLayer;
+    private final UIManager uiManager;
+
+    public LevelEditor(long glfwWindow, EntityRegistry entityRegistry, game.engine.StateManager stateManager) {
+        this.imGuiLayer = new ImGuiLayer();
+        this.imGuiLayer.init(glfwWindow);
+        this.uiManager = new UIManager(entityRegistry);
+        // StateManager is accepted for future use by editor panels; stored if needed
     }
 
+    /**
+     * Renders the level editor UI for the current frame.
+     */
     public void update() {
-        imGuiGlfw.newFrame();
-        ImGui.newFrame();
-
-        ImGui.begin("Level Editor");
-        if (ImGui.button("Save")) {
-            System.out.println("Saved");
-        }
-
-        ImGui.end();
-
-        ImGui.render();
-        imGuiGl3.renderDrawData(ImGui.getDrawData());
+        imGuiLayer.beginFrame();
+        uiManager.render();
+        imGuiLayer.endFrame();
     }
 
+    /**
+     * Cleans up ImGui resources.
+     */
     public void cleanup() {
-        imGuiGl3.dispose();
-        imGuiGlfw.dispose();
-        ImGui.destroyContext();
+        imGuiLayer.cleanup();
     }
 }

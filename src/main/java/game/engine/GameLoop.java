@@ -23,6 +23,7 @@ public class GameLoop {
     private Time time;
     private World world;
     private LevelEditor editor;
+    private StateManager stateManager;
 
     public GameLoop() {
         Logger.info(Logger.ENGINE, "GameLoop created.");
@@ -33,7 +34,9 @@ public class GameLoop {
     private void start() {
         Logger.info(Logger.ENGINE, "Starting engine systems...");
         window.createWindow();
-        input = new InputManager(window.getHandle());
+        time = new Time();
+        this.stateManager = new StateManager(window, time);
+        input = new InputManager(window.getHandle(), this.stateManager);
 
         surface = new RenderSurface() {
             @Override public int getWidth() { return window.getWidth(); }
@@ -41,10 +44,12 @@ public class GameLoop {
         };
 
         renderer = new OpenGLRenderer(surface);
-        time = new Time();
 
         world = new World(ecs);
         world.initDemoEntities(window.getWidth(), window.getHeight());
+        // create shared editor and registry once
+        EntityRegistry registry = new EntityRegistry(ecs, world);
+        editor = new LevelEditor(window.getHandle(), registry, this.stateManager);
     }
 
     public void run() {
@@ -67,6 +72,11 @@ public class GameLoop {
             input.beginFrame();
             window.pollEvents();
 
+            // Update world state only when playing
+            if (world != null && stateManager.isPlaying()) {
+                world.update(time.getDelta());
+            }
+
             if (renderer != null) {
                 game.engine.renderer.RenderContext ctx = new game.engine.renderer.RenderContext(
                         window.getWidth(), window.getHeight(), time.getDelta());
@@ -76,8 +86,10 @@ public class GameLoop {
                 renderer.endFrame();
             }
 
-            editor = new LevelEditor(window.getHandle());
-            editor.update();
+            // Editor UI should only render when in editor state
+            if (editor != null && stateManager.isEditor()) {
+                editor.update();
+            }
 
             window.swapBuffers();
         }
