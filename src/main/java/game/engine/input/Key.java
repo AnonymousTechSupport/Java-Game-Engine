@@ -15,7 +15,8 @@ public enum Key {
     Q(GLFW.GLFW_KEY_Q, 16), R(GLFW.GLFW_KEY_R, 17), S(GLFW.GLFW_KEY_S, 18), T(GLFW.GLFW_KEY_T, 19),
     U(GLFW.GLFW_KEY_U, 20), V(GLFW.GLFW_KEY_V, 21), W(GLFW.GLFW_KEY_W, 22), X(GLFW.GLFW_KEY_X, 23),
     Y(GLFW.GLFW_KEY_Y, 24), Z(GLFW.GLFW_KEY_Z, 25),
-    ESC(GLFW.GLFW_KEY_ESCAPE, 26);
+    ESC(GLFW.GLFW_KEY_ESCAPE, 26),
+    F1(GLFW.GLFW_KEY_F1, 27);
 
     private final int glfwCode;
     private final int index; // stable index used by Keyboard arrays

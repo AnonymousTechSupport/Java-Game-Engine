@@ -16,6 +16,8 @@ public class ImGuiLayer {
     public void init(long glfwWindow) {
         ImGui.createContext();
         ImGui.getIO().addConfigFlags(ImGuiConfigFlags.DockingEnable);
+        // Increase global ImGui font scale so UI text is larger across the editor
+        ImGui.getIO().setFontGlobalScale(1.5f);
         imGuiGlfw.init(glfwWindow, true);
         imGuiGl3.init("#version 330");
     }

@@ -2,7 +2,6 @@ package game.engine.ui;
 
 import game.engine.EntityRegistry;
 import game.engine.ui.panels.SceneHierarchyPanel;
-import game.engine.ui.popups.RenamePopup;
 import imgui.ImGui;
 import imgui.ImGuiViewport;
 import imgui.flag.ImGuiWindowFlags;
@@ -20,8 +19,15 @@ public class UIManager {
 
     public UIManager(EntityRegistry entityRegistry) {
         // Register all UI components here
-        components.add(new SceneHierarchyPanel(entityRegistry));
-        components.add(new RenamePopup(entityRegistry));
+        SelectionContext selection = new SelectionContext();
+        
+        // edit context enforces single active editor
+        EditContext editContext = new EditContext();
+        // central rename service
+        RenameService renameService = new RenameService(entityRegistry);
+        SceneHierarchyPanel scene = new SceneHierarchyPanel(entityRegistry, selection, editContext, renameService);
+        components.add(scene);
+        components.add(new game.engine.ui.panels.InspectorPanel(entityRegistry, selection, renameService, editContext));
     }
 
     /**

@@ -48,7 +48,7 @@ public class InputManager {
     public void onKeyEvent(long win, int keyCode, int scancode, int action, int mods) {
         // Highest priority: state transitions
         if (action == GLFW.GLFW_PRESS) {
-            if (keyCode == GLFW.GLFW_KEY_E) {
+            if (keyCode == GLFW.GLFW_KEY_F1) {
                 // toggle editor
                 if (stateManager.isEditor()) stateManager.setState(game.engine.EngineState.PLAYING);
                 else stateManager.setState(game.engine.EngineState.EDITOR);
