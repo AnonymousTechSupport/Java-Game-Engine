@@ -15,19 +15,24 @@ import java.util.List;
  */
 public class UIManager {
     private final List<UIComponent> components = new ArrayList<>();
-    
+    private final EditContext editContext;
 
     public UIManager(EntityRegistry entityRegistry) {
         // Register all UI components here
         SelectionContext selection = new SelectionContext();
-        
+
         // edit context enforces single active editor
-        EditContext editContext = new EditContext();
+        this.editContext = new EditContext();
         // central rename service
         RenameService renameService = new RenameService(entityRegistry);
         SceneHierarchyPanel scene = new SceneHierarchyPanel(entityRegistry, selection, editContext, renameService);
         components.add(scene);
         components.add(new game.engine.ui.panels.InspectorPanel(entityRegistry, selection, renameService, editContext));
+    }
+
+    /** Cancel any active inline editor managed by the UI. Safe to call from a StateListener. */
+    public void cancelEdits() {
+        if (this.editContext != null) this.editContext.cancel();
     }
 
     /**

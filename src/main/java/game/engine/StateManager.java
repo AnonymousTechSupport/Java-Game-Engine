@@ -9,7 +9,7 @@ import java.util.List;
  * Create one instance and share it with subsystems that need to know the current state.
  */
 public class StateManager {
-    private EngineState state = EngineState.PLAYING;
+    private EngineState state = EngineState.EDITOR;
     private final List<StateListener> listeners = new ArrayList<>();
     private final WindowHandler window;
     private final Time time;

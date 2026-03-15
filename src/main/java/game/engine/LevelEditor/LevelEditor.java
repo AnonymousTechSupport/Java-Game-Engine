@@ -16,7 +16,18 @@ public class LevelEditor {
         this.imGuiLayer = new ImGuiLayer();
         this.imGuiLayer.init(glfwWindow);
         this.uiManager = new UIManager(entityRegistry);
-        // StateManager is accepted for future use by editor panels; stored if needed
+
+        // When the engine transitions to PLAYING we should cancel any active inline edit
+        // so that entering the game does not leave stale input widgets open. Use the
+        // StateManager listener API to keep this coupling minimal.
+        stateManager.addListener(new game.engine.StateManager.StateListener() {
+            @Override
+            public void onStateChanged(game.engine.EngineState from, game.engine.EngineState to) {
+                if (to == game.engine.EngineState.PLAYING) {
+                    uiManager.cancelEdits();
+                }
+            }
+        });
     }
 
     /**

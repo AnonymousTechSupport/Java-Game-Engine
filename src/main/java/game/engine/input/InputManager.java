@@ -48,21 +48,25 @@ public class InputManager {
     public void onKeyEvent(long win, int keyCode, int scancode, int action, int mods) {
         // Highest priority: state transitions
         if (action == GLFW.GLFW_PRESS) {
+            // F1: enter the game (PLAYING). Canceling edits is handled by the LevelEditor
+            // via the StateManager listener which calls UIManager.cancelEdits().
             if (keyCode == GLFW.GLFW_KEY_F1) {
-                // toggle editor
-                if (stateManager.isEditor()) stateManager.setState(game.engine.EngineState.PLAYING);
-                else stateManager.setState(game.engine.EngineState.EDITOR);
+                stateManager.setState(game.engine.EngineState.PLAYING);
                 return;
             }
+
+            // F2: return to the editor
+            if (keyCode == GLFW.GLFW_KEY_F2) {
+                stateManager.setState(game.engine.EngineState.EDITOR);
+                return;
+            }
+
+            // ESC: only affects PLAYING / PAUSED. Ignore in EDITOR.
             if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-                // If we're in the editor, ESC should first exit the editor and return to PLAYING
-                // instead of toggling PAUSED. From PLAYING, ESC will still toggle PAUSED as expected.
-                if (stateManager.isEditor()) {
-                    stateManager.setState(game.engine.EngineState.PLAYING);
+                if (stateManager.isPlaying()) {
+                    stateManager.setState(game.engine.EngineState.PAUSED);
                 } else if (stateManager.isPaused()) {
                     stateManager.setState(game.engine.EngineState.PLAYING);
-                } else {
-                    stateManager.setState(game.engine.EngineState.PAUSED);
                 }
                 return;
             }
