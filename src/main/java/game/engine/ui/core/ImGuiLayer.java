@@ -1,4 +1,4 @@
-package game.engine.ui;
+package game.engine.ui.core;
 
 import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
@@ -16,8 +16,7 @@ public class ImGuiLayer {
     public void init(long glfwWindow) {
         ImGui.createContext();
         ImGui.getIO().addConfigFlags(ImGuiConfigFlags.DockingEnable);
-        // Increase global ImGui font scale so UI text is larger across the editor
-        ImGui.getIO().setFontGlobalScale(1.5f);
+        ImGui.getIO().setFontGlobalScale(1.65f);
         imGuiGlfw.init(glfwWindow, true);
         imGuiGl3.init("#version 330");
     }

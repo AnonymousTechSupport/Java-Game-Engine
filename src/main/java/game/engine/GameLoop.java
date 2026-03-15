@@ -89,6 +89,7 @@ public class GameLoop {
             // Editor UI should only render when in editor state
             if (editor != null && stateManager.isEditor()) {
                 editor.update();
+                editor.getUiManager().getUiEventQueue().flush();
             }
 
             window.swapBuffers();

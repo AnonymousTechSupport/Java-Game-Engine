@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * Simple insertion-ordered component container keyed by entity id.
  */
-public class ComponentManager<T> {
+public class ComponentManager<T extends game.engine.ECS.components.Component> {
     private final Map<Integer, T> store = new LinkedHashMap<>();
 
     /** Add or replace a component for an entity. */

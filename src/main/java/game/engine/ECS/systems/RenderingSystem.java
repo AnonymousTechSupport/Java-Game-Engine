@@ -30,7 +30,12 @@ public class RenderingSystem {
             RectangleComponent rc = rectangles.get(e);
             TransformComponent tc = transforms.get(e);
             if (tc == null || rc == null) continue;
-            renderer.drawRect(tc.x, tc.y, rc.width, rc.height, rc.r, rc.g, rc.b);
+            renderer.pushMatrix();
+            renderer.translate(tc.x, tc.y);
+            renderer.rotate(tc.rotation);
+            renderer.scale(tc.scaleX, tc.scaleY);
+            renderer.drawRect(0, 0, rc.width, rc.height, rc.r, rc.g, rc.b);
+            renderer.popMatrix();
         }
 
         // Balls
@@ -38,7 +43,12 @@ public class RenderingSystem {
             BallComponent bc = balls.get(e);
             TransformComponent tc = transforms.get(e);
             if (tc == null || bc == null) continue;
-            renderer.drawBall(tc.x, tc.y, bc.radius, bc.r, bc.g, bc.b);
+            renderer.pushMatrix();
+            renderer.translate(tc.x, tc.y);
+            renderer.rotate(tc.rotation);
+            renderer.scale(tc.scaleX, tc.scaleY);
+            renderer.drawBall(0, 0, bc.radius, bc.r, bc.g, bc.b);
+            renderer.popMatrix();
         }
     }
 }

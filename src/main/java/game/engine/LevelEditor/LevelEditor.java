@@ -1,8 +1,9 @@
 package game.engine.LevelEditor;
 
 import game.engine.EntityRegistry;
-import game.engine.ui.ImGuiLayer;
-import game.engine.ui.UIManager;
+import game.engine.ui.core.ImGuiLayer;
+import game.engine.ui.core.UIManager;
+import game.engine.ui.core.UIController;
 
 /**
  * The main class for the Level Editor UI.
@@ -17,17 +18,15 @@ public class LevelEditor {
         this.imGuiLayer.init(glfwWindow);
         this.uiManager = new UIManager(entityRegistry);
 
-        // When the engine transitions to PLAYING we should cancel any active inline edit
-        // so that entering the game does not leave stale input widgets open. Use the
-        // StateManager listener API to keep this coupling minimal.
-        stateManager.addListener(new game.engine.StateManager.StateListener() {
-            @Override
-            public void onStateChanged(game.engine.EngineState from, game.engine.EngineState to) {
-                if (to == game.engine.EngineState.PLAYING) {
-                    uiManager.cancelEdits();
-                }
-            }
-        });
+        // Register the UIController which centralizes UI reactions to engine state
+        // changes. The UIController will forward events to panels and run
+        // cross-cutting policies such as cancelling edits on PLAYING.
+        var uiController = new UIController(uiManager);
+        stateManager.addListener(uiController);
+    }
+
+    public UIManager getUiManager() {
+        return uiManager;
     }
 
     /**

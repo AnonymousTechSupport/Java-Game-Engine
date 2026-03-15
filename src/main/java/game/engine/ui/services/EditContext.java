@@ -1,15 +1,18 @@
-package game.engine.ui;
+package game.engine.ui.services;
 
-import game.engine.ui.components.EditableLabel;
+import game.engine.ui.components.InlineEditor;
 
 /**
  * Tracks the single active inline editor in the UI. Enforces a single-active-editor
  * rule: attempts to start a new edit will fail while another editor is active. The
  * current editor can be focused so the user is guided to finish or cancel it.
+ *
+ * This class depends on the InlineEditor interface so it is decoupled from any
+ * concrete editor implementation (such as EditableLabel).
  */
 public class EditContext {
     private int currentEntityId = -1;
-    private EditableLabel currentEditor = null;
+    private InlineEditor currentEditor = null;
 
     /**
      * Request to start editing for the given entity using the provided editor instance.
@@ -17,7 +20,7 @@ public class EditContext {
      * If another editor is active, this returns false and focuses the active editor.
      * This method must be called from the UI thread.
      */
-    public boolean requestStartEdit(int entityId, EditableLabel editor, String initial) {
+    public boolean requestStartEdit(int entityId, InlineEditor editor, String initial) {
         if (currentEditor == null) {
             currentEditor = editor;
             currentEntityId = entityId;
@@ -34,7 +37,7 @@ public class EditContext {
     }
 
     /** Notify the context that the given editor has closed (commit or cancel). */
-    public void notifyClosed(EditableLabel editor) {
+    public void notifyClosed(InlineEditor editor) {
         if (currentEditor == editor) {
             currentEditor = null;
             currentEntityId = -1;
@@ -55,7 +58,6 @@ public class EditContext {
             currentEditor.cancel();
         }
     }
-
 
     /** Return true if any editor is currently active. */
     public boolean isAnyEditing() { return currentEditor != null; }

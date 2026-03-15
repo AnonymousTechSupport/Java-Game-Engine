@@ -1,6 +1,7 @@
 package game.engine.ui.components;
 
-import game.engine.ui.EditContext;
+import game.engine.ui.services.EditContext;
+import imgui.flag.ImGuiKey;
 import imgui.ImGui;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
@@ -10,12 +11,12 @@ import imgui.type.ImString;
  * the edit state, buffer, focus handling and provides a simple callback API
  * so callers can react to commit/cancel without duplicating UI logic.
  */
-public class EditableLabel {
-    private final String id; // stable id used to build internal ImGui widget ids
+public class EditableLabel implements InlineEditor {
+    private final String id; // stable id for ImGui widgets
     private final ImString buffer;
     private boolean editing = false;
     private boolean justOpened = false;
-    private final EditContext editContext; // manages single-active-editor policy
+    private final EditContext editContext; // enforces single active editor
 
     /** Callback interface invoked on commit/cancel events. */
     public interface Callback {
@@ -38,19 +39,15 @@ public class EditableLabel {
     /** Update the visible text (used when external renames occur). */
     public void setText(String text) { buffer.set(text == null ? "" : text); }
 
-    /** Programmatically start editing with an initial buffer. Called directly by callers. */
-    public void startEdit(String initial) {
-        // Start editing directly without enforcing EditContext rules. This is a
-        // convenience method used by panels that have already negotiated editing
-        // ownership through EditContext if needed.
-        beginEditInternal(initial);
-    }
+    /**
+     * Programmatically start editing with an initial buffer. Called directly by callers.
+     */
+    public void startEdit(String initial) { beginEditInternal(initial); }
 
     /** Cancel the current edit and discard the buffer. */
     public void cancel() {
         editing = false;
         justOpened = false;
-        // inform EditContext if this was the active editor
         if (editContext != null) editContext.notifyClosed(this);
     }
 
@@ -80,48 +77,63 @@ public class EditableLabel {
     }
 
     /** Request focus for the current editor (called by EditContext). */
-    public void requestFocus() {
-        justOpened = true; // next render will focus
-    }
+    public void requestFocus() { justOpened = true; }
 
     /**
-     * Render the label. When not editing this shows a selectable label which
-     * starts edit on double-click. When editing, shows an input text and Cancel
-     * button. Commit and cancel are reported via the callback.
+     * Render the label inside a row of known height. Caller must supply
+     * the target rowHeight so the label can be vertically centered.
      *
      * @param labelVisible the human-readable label to display
+     * @param entityId the entity id this label represents
+     * @param selected whether the row should be drawn as selected
      * @param cb callback invoked on commit/cancel
      * @param onSelect runnable executed on single left-click (for selection)
+     * @param rowHeight exact height (pixels) to use for the row
      */
-    public void render(String labelVisible, int entityId, Callback cb, Runnable onSelect) {
+    public void render(String labelVisible, int entityId, boolean selected, Callback cb, Runnable onSelect, float rowHeight) {
         if (!editing) {
-            ImGui.selectable(labelVisible);
+            float frameHeight = ImGui.getFrameHeight();
+            float centerOffset = (rowHeight - frameHeight) * 0.5f;
+            if (centerOffset > 0) {
+                ImGui.setCursorPosY(ImGui.getCursorPosY() + centerOffset);
+            }
 
-            // Left-click to select, double-click to edit
-            if (ImGui.isItemClicked(0)) {
-                if (ImGui.isMouseDoubleClicked(0)) {
-                    // tryStart will enforce EditContext rules
-                    tryStart(entityId);
-                } else if (onSelect != null) {
-                    onSelect.run(); // notify panel of selection
-                }
+            ImGui.selectable(labelVisible + "##sel-" + id, selected, 0, 0, rowHeight);
+
+            boolean hovered = ImGui.isItemHovered();
+            boolean mouseDouble = ImGui.isMouseDoubleClicked(0);
+            boolean mouseClicked = ImGui.isItemClicked(0);
+
+            if (mouseDouble && hovered) {
+                boolean started = tryStart(entityId);
+                if (started && onSelect != null) onSelect.run();
+            } else if (mouseClicked && hovered) {
+                if (onSelect != null) onSelect.run();
             }
         } else {
-            // Internal widget id uses ## suffix to avoid visible-label collisions
+            float frameHeight = ImGui.getFrameHeight();
+            float centerOffset = (rowHeight - frameHeight) * 0.5f;
+            if (centerOffset > 0) {
+                ImGui.setCursorPosY(ImGui.getCursorPosY() + centerOffset);
+            }
+
+            ImGui.setNextItemWidth(ImGui.getContentRegionAvailX());
             String widgetId = "##editable-" + id;
             boolean submitted = ImGui.inputText(widgetId, buffer, ImGuiInputTextFlags.EnterReturnsTrue);
+
             if (justOpened) {
-                // Focus the input once when editing starts
                 ImGui.setKeyboardFocusHere(0);
                 justOpened = false;
             }
-            ImGui.sameLine();
-            if (ImGui.button("Cancel##cancel-" + id)) {
+
+            int escKey = ImGui.getIO().getKeyMap(ImGuiKey.Escape);
+            if (ImGui.isKeyPressed(escKey)) {
                 editing = false;
                 cb.onCancel();
                 if (editContext != null) editContext.notifyClosed(this);
                 return;
             }
+
             if (submitted) {
                 editing = false;
                 cb.onCommit(buffer.get().trim());
@@ -129,4 +141,5 @@ public class EditableLabel {
             }
         }
     }
+
 }

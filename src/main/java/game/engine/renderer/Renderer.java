@@ -14,6 +14,12 @@ public interface Renderer {
     /** Draw a filled ball (circle) at the given position. */
     void drawBall(float x, float y, float radius, float r, float g, float b);
 
+    void pushMatrix();
+    void popMatrix();
+    void translate(float x, float y);
+    void rotate(float angle);
+    void scale(float x, float y);
+
     /** Finish the frame and flush any pending GPU work. */
     void endFrame();
 

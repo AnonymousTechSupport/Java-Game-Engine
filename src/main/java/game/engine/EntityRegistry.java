@@ -2,9 +2,14 @@ package game.engine;
 
 import game.engine.ECS.Entity;
 import game.engine.ECS.EntityManager;
+import game.engine.ECS.components.Component;
+import game.engine.ECS.components.ComponentType;
+
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
+
 import game.engine.logging.Logger;
 
 /**
@@ -35,7 +40,8 @@ public class EntityRegistry {
     /** Return a snapshot list of entities (id + name). */
     public List<Entity> listEntities() {
         List<Entity> out = new ArrayList<>();
-        BitSet bits = entityManager.availableEntityIds().isEmpty() ? entityManager.activeEntities() : entityManager.activeEntities();
+        // Use the activeEntities bitset to iterate currently alive entities.
+        BitSet bits = entityManager.activeEntities();
         Logger.trace(Logger.WORLD, () -> "Listing entities for UI refresh; activeCount=" + bits.cardinality());
         for (int i = bits.nextSetBit(0); i >= 0; i = bits.nextSetBit(i + 1)) {
             String name = entityManager.getName(i);
@@ -73,5 +79,25 @@ public class EntityRegistry {
         entityManager.removeEntity(id);
         Logger.info(Logger.WORLD, "Destroyed entity " + id);
         return true;
+    }
+
+    public void addComponent(int entityId, ComponentType componentType) {
+        world.addComponent(entityId, componentType);
+    }
+
+    public void removeComponent(int entityId, ComponentType componentType) {
+        world.removeComponent(entityId, componentType);
+    }
+
+    public Map<ComponentType, Component> getComponents(int entityId) {
+        return world.getComponents(entityId);
+    }
+
+    public Component getComponent(int entityId, ComponentType componentType) {
+        return world.getComponent(entityId, componentType);
+    }
+
+    public ComponentType[] getAvailableComponentTypes() {
+        return world.getAvailableComponentTypes();
     }
 }

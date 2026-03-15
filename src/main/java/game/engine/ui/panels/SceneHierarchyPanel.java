@@ -1,91 +1,158 @@
 package game.engine.ui.panels;
 
 import game.engine.ECS.Entity;
-import game.engine.EntityRegistry;
-import game.engine.ui.EditContext;
-import game.engine.ui.RenameService;
-import game.engine.ui.SelectionContext;
-import game.engine.ui.UIComponent;
-import game.engine.ui.components.EditableLabel;
+import game.engine.ECS.components.Component;
+import game.engine.ECS.components.ComponentType;
+import game.engine.ui.core.UIComponentWithContext;
+import game.engine.ui.core.UIContext;
+import game.engine.ui.services.EditContext;
+import game.engine.ui.services.RenameService;
+import game.engine.ui.services.Selection;
+import game.engine.ui.services.SelectionService;
+import game.engine.ui.components.ContextMenu;
+import game.engine.ui.components.UIButton;
 import imgui.ImGui;
+import imgui.flag.ImGuiStyleVar;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 /**
- * A UI panel that displays the list of entities in the scene.
+ * A UI panel that displays the list of entities in the scene hierarchy.
+ * It allows selecting entities, renaming them, and deleting them. This panel
+ * listens to selection changes to highlight the selected entity.
  */
-public class SceneHierarchyPanel extends UIComponent {
-    private final SelectionContext selection;
+public class SceneHierarchyPanel extends UIComponentWithContext implements SelectionService.SelectionListener {
+    private final SelectionService selectionService;
     private final RenameService renameService;
     private final EditContext editContext;
-    // Per-entity inline editors so each row can enter edit mode independently
-    private final Map<Integer, EditableLabel> editableMap = new HashMap<>();
+    private final Map<Integer, game.engine.ui.components.EntityRow> rowMap = new HashMap<>();
+    private final Map<Integer, Boolean> expanded = new HashMap<>();
+    private Selection currentSelection = null;
 
-    public SceneHierarchyPanel(EntityRegistry entityRegistry, SelectionContext selection, EditContext editContext, RenameService renameService) {
-        super(entityRegistry);
-        this.selection = selection;
+    public SceneHierarchyPanel(UIContext context,
+                               SelectionService selectionService,
+                               EditContext editContext,
+                               RenameService renameService) {
+        super(context);
+        this.selectionService = selectionService;
         this.editContext = editContext;
         this.renameService = renameService;
     }
 
     @Override
+    public void onSelectionChanged(Selection newSelection) {
+        this.currentSelection = newSelection;
+        if (newSelection != null && newSelection.isEntity()) {
+            expanded.put(newSelection.getEntityId(), true);
+        }
+    }
+
+    @Override
     public void render() {
         ImGui.begin("Scene Hierarchy");
+        // Slightly larger frame/item spacing for taller rows.
+        ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, 2.0f, 3.0f);
+        ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 1.0f, 10.0f);
 
-        // Use a copy to avoid concurrency issues if another thread modifies the list
         List<Entity> entities = List.copyOf(entityRegistry.listEntities());
+
 
         for (Entity e : entities) {
             int entityId = e.getId();
             String currentName = e.getName() != null ? e.getName() : ("Entity " + entityId);
 
-            // Obtain or create per-entity EditableLabel
-            EditableLabel editable = editableMap.computeIfAbsent(entityId,
-                id -> new EditableLabel("entity-" + id, currentName, editContext)
+            game.engine.ui.components.EntityRow row = rowMap.computeIfAbsent(entityId,
+                id -> new game.engine.ui.components.EntityRow(id, currentName, editContext, uiContext)
             );
 
-            // Keep visible text in sync when not editing
-            if (!editable.isEditing()) {
-                editable.setText(currentName);
-            }
+            if (!row.isEditing()) row.setText(currentName);
 
-            // Render the editable label
-            editable.render(currentName, entityId, new EditableLabel.Callback() {
-                @Override public void onCommit(String newText) {
-                    if (renameService != null) renameService.commitRename(entityId, newText);
+            row.setExpanded(expanded.getOrDefault(entityId, false));
+
+            Map<ComponentType, Component> componentsWithInstances = uiContext.getComponents(entityId);
+            List<ComponentType> components = new ArrayList<>(componentsWithInstances.keySet());
+            row.render(currentName, currentSelection, components, new game.engine.ui.components.EntityRow.Callback() {
+                @Override public void onSelect(Selection selection) {
+                    selectionService.setSelected(selection);
                 }
-                @Override public void onCancel() { /* nothing */ }
-            }, () -> {
-                // onSelect: executed on left-click
-                selection.setSelectedEntityId(entityId);
+
+                @Override public void onRename(int id, String newName) {
+                    // If newName==null it's a request to start editing from the menu
+                    if (newName == null) {
+                        // request start edit via EditContext using the row's editable
+                        game.engine.ui.components.EntityRow r = rowMap.get(id);
+                        if (r != null) {
+                            boolean started = editContext.requestStartEdit(id, r.getEditable(), currentName);
+                            if (started) selectionService.setSelected(new Selection(id));
+                        }
+                    } else {
+                        renameService.commitRename(id, newName);
+                    }
+                }
+                @Override public void onDelete(int id) { handleDeleteEntity(id); }
+                @Override public void onToggleExpand(int id, boolean newState) { expanded.put(id, newState); }
+
+                @Override
+                public void onAddComponent(int entityId) {
+                    ImGui.openPopup("add_component_popup_hierarchy_" + entityId);
+                }
+
+                @Override
+                public void onComponentSelected(int entityId, ComponentType type) {
+                    selectionService.setSelected(new Selection(entityId, type));
+                }
             });
-
-            // Right-click context menu: delete or start inline rename
-            if (ImGui.beginPopupContextItem()) {
-                if (ImGui.menuItem("Delete Entity")) {
-                    entityRegistry.destroyEntity(entityId);
-                    if (selection.getSelectedEntityId() == entityId) {
-                        selection.clear();
-                    }
-                    editableMap.remove(entityId);
-                    // Also notify EditContext to cancel if this entity was being edited
-                    if (editContext.isEditing(entityId)) {
-                        editContext.cancel();
-                    }
-                }
-                if (ImGui.menuItem("Rename Entity")) {
-                    // Request edit start. If another edit is active, EditContext will
-                    // block and focus the active one.
-                    boolean started = editContext.requestStartEdit(entityId, editable, currentName);
-                    if (started) {
-                        selection.setSelectedEntityId(entityId);
-                    }
-                }
+            if (ImGui.beginPopup("add_component_popup_hierarchy_" + entityId)) {
+                renderAddComponentMenuItems(entityId);
                 ImGui.endPopup();
             }
         }
+
+        // restore style vars for the panel
+        ImGui.popStyleVar(2);
         ImGui.end();
     }
+
+    private void renderAddComponentMenuItems(int entityId) {
+        ContextMenu.buildPopup(uiContext, builder -> {
+            builder.addGroup("Engine Components", group -> {
+                for (ComponentType componentType : uiContext.getAvailableComponentTypes()) {
+                    if (componentType.getCategory() == ComponentType.Category.ENGINE) {
+                        group.addItem(componentType.name(), () -> uiContext.deferAddComponent(entityId, componentType));
+                    }
+                }
+            });
+            builder.addSeparator();
+            builder.addGroup("Custom Components", group -> {
+                for (ComponentType componentType : uiContext.getAvailableComponentTypes()) {
+                    if (componentType.getCategory() == ComponentType.Category.CUSTOM) {
+                        group.addItem(componentType.name(), () -> uiContext.deferAddComponent(entityId, componentType));
+                    }
+                }
+            });
+            builder.setFooter(new UIButton("Add Custom Component", (ctx) -> {
+                // TODO: Implement logic to add a new custom component
+            }));
+        });
+    }
+
+    // per-row context menus are handled by EntityRow; window-level menu removed
+
+    private void handleDeleteEntity(int entityId) {
+        // Cancel any active edit immediately (UI thread) and enqueue destroy on engine side.
+        if (editContext.isEditing(entityId)) {
+            editContext.cancel();
+        }
+        uiContext.deferDestroyEntity(entityId);
+        // remove any per-entity UI state we maintain
+        rowMap.remove(entityId);
+        expanded.remove(entityId);
+        // If the deleted entity was selected, clear the selection.
+        if (currentSelection != null && currentSelection.isEntity() && currentSelection.getEntityId() == entityId) {
+            selectionService.clear();
+        }
+    }
 }
+

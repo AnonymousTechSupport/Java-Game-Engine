@@ -16,6 +16,7 @@ public final class Logger {
     public static final String ENGINE = "Engine";
     public static final String INPUT = "Input";
     public static final String WORLD = "World";
+    public static final String UI = "UI";
 
     private static LogLevel minLevel = LogLevel.INFO;
     private static boolean showTime = true;

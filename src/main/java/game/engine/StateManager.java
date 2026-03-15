@@ -18,7 +18,7 @@ public class StateManager {
         this.window = window;
         this.time = time;
         onEnter(this.state);
-        Logger.info(Logger.ENGINE, "StateManager initialized in PLAYING state.");
+        Logger.info(Logger.ENGINE, "StateManager initialized in " + this.state);
     }
 
     public synchronized EngineState getState() { return state; }

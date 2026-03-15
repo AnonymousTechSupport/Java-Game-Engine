@@ -1,4 +1,4 @@
-package game.engine.ui;
+package game.engine.ui.services;
 
 import game.engine.EntityRegistry;
 

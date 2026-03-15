@@ -65,6 +65,31 @@ public class OpenGLRenderer implements Renderer {
     }
 
     @Override
+    public void pushMatrix() {
+        glPushMatrix();
+    }
+
+    @Override
+    public void popMatrix() {
+        glPopMatrix();
+    }
+
+    @Override
+    public void translate(float x, float y) {
+        glTranslatef(x, y, 0);
+    }
+
+    @Override
+    public void rotate(float angle) {
+        glRotatef(angle, 0, 0, 1);
+    }
+
+    @Override
+    public void scale(float x, float y) {
+        glScalef(x, y, 1);
+    }
+
+    @Override
     public void endFrame() {
         Logger.trace(Logger.RENDER, "endFrame");
         glPopMatrix(); // MODELVIEW

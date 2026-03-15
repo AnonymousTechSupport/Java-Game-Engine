@@ -48,7 +48,7 @@ public class InputManager {
     public void onKeyEvent(long win, int keyCode, int scancode, int action, int mods) {
         // Highest priority: state transitions
         if (action == GLFW.GLFW_PRESS) {
-            // F1: enter the game (PLAYING). Canceling edits is handled by the LevelEditor
+            // F1: enter the game (PLAYING). Canceling edits is handled by the UIController
             // via the StateManager listener which calls UIManager.cancelEdits().
             if (keyCode == GLFW.GLFW_KEY_F1) {
                 stateManager.setState(game.engine.EngineState.PLAYING);
@@ -60,20 +60,22 @@ public class InputManager {
                 stateManager.setState(game.engine.EngineState.EDITOR);
                 return;
             }
-
-            // ESC: only affects PLAYING / PAUSED. Ignore in EDITOR.
-            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-                if (stateManager.isPlaying()) {
-                    stateManager.setState(game.engine.EngineState.PAUSED);
-                } else if (stateManager.isPaused()) {
-                    stateManager.setState(game.engine.EngineState.PLAYING);
-                }
-                return;
-            }
         }
 
-        // If UI wants keyboard (e.g., in editor), consume
+        // If UI wants keyboard (e.g., the user is typing into a field), consume
+        // non-global keys and let the UI handle them (for example, Escape should
+        // cancel an inline edit instead of toggling game pause while typing).
         if ((stateManager.isEditor() || stateManager.isPaused()) && imgui.ImGui.getIO().getWantCaptureKeyboard()) {
+            return;
+        }
+
+        // Now handle Escape as a game-level toggle if UI did not capture it.
+        if (action == GLFW.GLFW_PRESS && keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            if (stateManager.isPlaying()) {
+                stateManager.setState(game.engine.EngineState.PAUSED);
+            } else if (stateManager.isPaused()) {
+                stateManager.setState(game.engine.EngineState.PLAYING);
+            }
             return;
         }
 
