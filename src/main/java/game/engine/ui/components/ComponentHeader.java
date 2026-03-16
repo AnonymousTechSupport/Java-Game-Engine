@@ -2,7 +2,6 @@ package game.engine.ui.components;
 
 import game.engine.ui.core.UIContext;
 import java.util.function.Consumer;
-import game.engine.ui.components.ContextMenu;
 import imgui.ImGui;
 import imgui.flag.ImGuiTreeNodeFlags;
 

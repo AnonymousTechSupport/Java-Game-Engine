@@ -1,6 +1,8 @@
 package game.engine.ui.panels;
 
 import game.engine.ECS.Entity;
+import game.engine.ECS.Templates.BaseEntityTemplate;
+import game.engine.ECS.Templates.EntityTemplates;
 import game.engine.ECS.components.Component;
 import game.engine.ECS.components.ComponentType;
 import game.engine.ui.core.UIComponentWithContext;
@@ -11,6 +13,7 @@ import game.engine.ui.services.Selection;
 import game.engine.ui.services.SelectionService;
 import game.engine.ui.components.ContextMenu;
 import game.engine.ui.components.UIButton;
+import game.engine.ui.components.*;
 import imgui.ImGui;
 import imgui.flag.ImGuiStyleVar;
 
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 /**
  * A UI panel that displays the list of entities in the scene hierarchy.
  * It allows selecting entities, renaming them, and deleting them. This panel
@@ -27,7 +31,7 @@ public class SceneHierarchyPanel extends UIComponentWithContext implements Selec
     private final SelectionService selectionService;
     private final RenameService renameService;
     private final EditContext editContext;
-    private final Map<Integer, game.engine.ui.components.EntityRow> rowMap = new HashMap<>();
+    private final Map<Integer, EntityRow> rowMap = new HashMap<>();
     private final Map<Integer, Boolean> expanded = new HashMap<>();
     private Selection currentSelection = null;
 
@@ -58,13 +62,14 @@ public class SceneHierarchyPanel extends UIComponentWithContext implements Selec
 
         List<Entity> entities = List.copyOf(entityRegistry.listEntities());
 
-
+        // Render each entity as a row in the hierarchy. We maintain a map of entityId -> EntityRow to preserve
+        // per-row UI state (like rename text and expanded/collapsed) across frames.
         for (Entity e : entities) {
             int entityId = e.getId();
             String currentName = e.getName() != null ? e.getName() : ("Entity " + entityId);
 
-            game.engine.ui.components.EntityRow row = rowMap.computeIfAbsent(entityId,
-                id -> new game.engine.ui.components.EntityRow(id, currentName, editContext, uiContext)
+            EntityRow row = rowMap.computeIfAbsent(entityId,
+                id -> new EntityRow(id, currentName, editContext, uiContext)
             );
 
             if (!row.isEditing()) row.setText(currentName);
@@ -73,7 +78,8 @@ public class SceneHierarchyPanel extends UIComponentWithContext implements Selec
 
             Map<ComponentType, Component> componentsWithInstances = uiContext.getComponents(entityId);
             List<ComponentType> components = new ArrayList<>(componentsWithInstances.keySet());
-            row.render(currentName, currentSelection, components, new game.engine.ui.components.EntityRow.Callback() {
+
+            row.render(currentName, currentSelection, components, new EntityRow.Callback() {
                 @Override public void onSelect(Selection selection) {
                     selectionService.setSelected(selection);
                 }
@@ -82,7 +88,7 @@ public class SceneHierarchyPanel extends UIComponentWithContext implements Selec
                     // If newName==null it's a request to start editing from the menu
                     if (newName == null) {
                         // request start edit via EditContext using the row's editable
-                        game.engine.ui.components.EntityRow r = rowMap.get(id);
+                        EntityRow r = rowMap.get(id);
                         if (r != null) {
                             boolean started = editContext.requestStartEdit(id, r.getEditable(), currentName);
                             if (started) selectionService.setSelected(new Selection(id));
@@ -107,14 +113,38 @@ public class SceneHierarchyPanel extends UIComponentWithContext implements Selec
             if (ImGui.beginPopup("add_component_popup_hierarchy_" + entityId)) {
                 renderAddComponentMenuItems(entityId);
                 ImGui.endPopup();
+            }            
+        }
+        
+        // Create an invisible full-width/height button at the end of the
+        // list to capture right-clicks on the empty area.
+        float availX = ImGui.getContentRegionAvailX();
+        float availY = ImGui.getContentRegionAvailY();
+        // Only create the invisible button if there is visible space remaining.
+        if (availX > 1f && availY > 1f) {
+            ImGui.invisibleButton("hierarchy_bg", availX, availY);
+            if (ImGui.beginPopupContextItem()) {
+                ContextMenu.buildPopup(uiContext, builder -> {
+                    builder.addSubMenu("Add Entity", submenu -> {
+                        for (BaseEntityTemplate template : EntityTemplates.getInstance()) {
+                            String label = template.getName();
+                            submenu.addItem(label, () -> uiContext.defer(() -> {
+                                int newId = template.instantiate(entityRegistry);
+                                selectionService.setSelected(new Selection(newId));
+                            }));
+                        }
+                    });
+                });
+                ImGui.endPopup();
             }
         }
-
+        
         // restore style vars for the panel
         ImGui.popStyleVar(2);
         ImGui.end();
     }
 
+    // Render the "Add Component" context menu for a given entity, grouping engine and custom components separately.
     private void renderAddComponentMenuItems(int entityId) {
         ContextMenu.buildPopup(uiContext, builder -> {
             builder.addGroup("Engine Components", group -> {
@@ -138,8 +168,7 @@ public class SceneHierarchyPanel extends UIComponentWithContext implements Selec
         });
     }
 
-    // per-row context menus are handled by EntityRow; window-level menu removed
-
+    // Handle deletion of an entity: cancel any active edits, enqueue the destroy action, and clean up UI state.
     private void handleDeleteEntity(int entityId) {
         // Cancel any active edit immediately (UI thread) and enqueue destroy on engine side.
         if (editContext.isEditing(entityId)) {
@@ -155,4 +184,3 @@ public class SceneHierarchyPanel extends UIComponentWithContext implements Selec
         }
     }
 }
-

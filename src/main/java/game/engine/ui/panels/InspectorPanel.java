@@ -86,9 +86,7 @@ public class InspectorPanel extends UIComponentWithContext implements SelectionS
             public void onCancel() {
                 // No special action needed; EditableLabel handles its own state.
             }
-        }, () -> {
-            selectionService.setSelected(new Selection(entityId));
-        }, rowHeight);
+        }, () -> selectionService.setSelected(new Selection(entityId)), rowHeight);
 
         ImGui.separator();
 

@@ -1,16 +1,15 @@
 package game.engine;
 
-import game.engine.ECS.EntityManager;
-import game.engine.ECS.ComponentManager;
+import dev.dominion.ecs.api.Dominion;
+import dev.dominion.ecs.api.Entity;
 import game.engine.ECS.components.Component;
 import game.engine.ECS.components.ComponentType;
+import game.engine.ECS.components.MetaDataComponent;
 import game.engine.renderer.Renderer;
-import game.engine.ECS.components.BallComponent;
-import game.engine.ECS.components.RectangleComponent;
-import game.engine.ECS.components.TransformComponent;
 import game.engine.ECS.systems.RenderingSystem;
 import game.engine.logging.Logger;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -18,45 +17,55 @@ import java.util.Map;
  * owning entity/component setup and exposing simple lifecycle methods.
  */
 public class World {
-    private final EntityManager ecs;
+    private final Dominion dominion;
     private final ComponentRegistry componentRegistry;
-    private final ComponentManager<TransformComponent> transforms;
-    private final ComponentManager<RectangleComponent> rectangles;
-    private final ComponentManager<BallComponent> balls;
     private final RenderingSystem renderingSystem;
 
-    public World(EntityManager ecs) {
-        this.ecs = ecs;
+    // Map to bridge legacy integer IDs to Dominion Entities
+    private final Map<Integer, dev.dominion.ecs.api.Entity> entityMap = new HashMap<>();
+    private int nextEntityId = 1;
+
+    public World() {
+        this.dominion = Dominion.create();
         this.componentRegistry = new ComponentRegistry();
 
-        // Create typed managers locally so callers (like RenderingSystem) can use
-        // them without unchecked casts. Also register the managers with the
-        // ComponentRegistry so the rest of the codebase can access components
-        // through the registry.
-        this.transforms = new ComponentManager<>();
-        this.rectangles = new ComponentManager<>();
-        this.balls = new ComponentManager<>();
+        componentRegistry.register(ComponentType.TRANSFORM, () -> new game.engine.ECS.components.TransformComponent(0, 0));
+        componentRegistry.register(ComponentType.RECTANGLE, () -> new game.engine.ECS.components.RectangleComponent(100, 100));
+        componentRegistry.register(ComponentType.BALL, () -> new game.engine.ECS.components.BallComponent(50));
+        componentRegistry.register(ComponentType.METADATA, () -> new MetaDataComponent("Entity"));
 
-        componentRegistry.register(ComponentType.TRANSFORM, this.transforms, () -> new TransformComponent(0, 0));
-        componentRegistry.register(ComponentType.RECTANGLE, this.rectangles, () -> new RectangleComponent(100, 100));
-        componentRegistry.register(ComponentType.BALL, this.balls, () -> new BallComponent(50));
+        this.renderingSystem = new RenderingSystem(dominion);
 
-        this.renderingSystem = new RenderingSystem(this.transforms, this.rectangles, this.balls);
+        Logger.info(Logger.WORLD, "World created and systems initialised (Dominion ECS).");
+    }
 
-        Logger.info(Logger.WORLD, "World created and systems initialised.");
+    /** Create an entity and return its ID. */
+    public int createEntity(String name) {
+        dev.dominion.ecs.api.Entity entity = dominion.createEntity();
+
+        // Allocate a stable integer id used by the rest of the codebase
+        int id = nextEntityId++;
+
+        // Add MetaDataComponent for name (use the chosen id for presentation)
+        MetaDataComponent meta = new MetaDataComponent(name != null ? name : "Entity " + id);
+        entity.add(meta);
+
+        // Store mapping from our integer id to the Dominion entity
+        entityMap.put(id, entity);
+        
+        Logger.trace(Logger.WORLD, () -> "Created entity " + id + " (" + meta.name + ")");
+        return id;
     }
 
     /** Create a couple demo entities to exercise rendering. */
     public void initDemoEntities(int screenWidth, int screenHeight) {
-        int e1 = ecs.createEntity();
+        int e1 = createEntity("Demo Rectangle");
         addComponent(e1, ComponentType.TRANSFORM);
         addComponent(e1, ComponentType.RECTANGLE);
-        Logger.debug(Logger.WORLD, () -> "Created demo rectangle entity with ID " + e1);
-
-        int e2 = ecs.createEntity();
+        
+        int e2 = createEntity("Demo Ball");
         addComponent(e2, ComponentType.TRANSFORM);
         addComponent(e2, ComponentType.BALL);
-        Logger.debug(Logger.WORLD, () -> "Created demo ball entity with ID " + e2);
     }
 
     /** Render all systems that produce draws. */
@@ -67,23 +76,62 @@ public class World {
 
     public void update(float dt) {
         // TODO: Update game logic, e.g., physics, AI
-        // no implementatin for now, but this is where it would go
     }
 
     public void addComponent(int entityId, ComponentType componentType) {
-        componentRegistry.addComponent(entityId, componentType);
+        dev.dominion.ecs.api.Entity entity = entityMap.get(entityId);
+        if (entity == null) return;
+
+        // Prevent adding duplicate component types — Dominion ECS throws when
+        // attempting to add the same component/class twice.
+        if (entity.has(componentType.getComponentClass())) {
+            Logger.warn(Logger.WORLD, "Entity " + entityId + " already has component " + componentType.name() + "; skipping add.");
+            return;
+        }
+
+        Component component = componentRegistry.createComponent(componentType);
+        if (component != null) {
+            entity.add(component);
+        }
     }
 
     public void removeComponent(int entityId, ComponentType componentType) {
-        componentRegistry.removeComponent(entityId, componentType);
+        dev.dominion.ecs.api.Entity entity = entityMap.get(entityId);
+        if (entity == null) return;
+
+        // Remove by class type
+        if (entity.has(componentType.getComponentClass())) {
+            entity.removeType(componentType.getComponentClass());
+        }
     }
 
     public Map<ComponentType, Component> getComponents(int entityId) {
-        return componentRegistry.getComponents(entityId);
+        Map<ComponentType, Component> components = new HashMap<>();
+        dev.dominion.ecs.api.Entity entity = entityMap.get(entityId);
+        if (entity == null) return components;
+
+        for (ComponentType type : ComponentType.values()) {
+            if (type == ComponentType.METADATA) continue; // internal use usually
+            
+            if (entity.has(type.getComponentClass())) {
+                // Dominion get returns the object cast to the class
+                Component c = (Component) entity.get(type.getComponentClass());
+                if (c != null) {
+                    components.put(type, c);
+                }
+            }
+        }
+        return components;
     }
 
     public Component getComponent(int entityId, ComponentType componentType) {
-        return componentRegistry.getComponent(entityId, componentType);
+        dev.dominion.ecs.api.Entity entity = entityMap.get(entityId);
+        if (entity == null) return null;
+
+        if (entity.has(componentType.getComponentClass())) {
+            return (Component) entity.get(componentType.getComponentClass());
+        }
+        return null;
     }
 
     public ComponentType[] getAvailableComponentTypes() {
@@ -95,7 +143,40 @@ public class World {
      * Centralizes component cleanup so callers can fully destroy an entity.
      */
     public void removeAllComponents(int entityId) {
-        componentRegistry.removeAllComponents(entityId);
-        Logger.debug(Logger.WORLD, () -> "Completed component cleanup for entity " + entityId);
+      Entity entity = entityMap.get(entityId);
+      if (entity != null) {
+        dominion.deleteEntity(entity);
+        entityMap.remove(entityId);
+      }
+        Logger.debug(Logger.WORLD, () -> "Completed cleanup for entity " + entityId);
+    }
+    
+    public Dominion getDominion() {
+        return dominion;
+    }
+    
+    // Helper to get name from MetaData
+    public String getName(int entityId) {
+        Entity entity = entityMap.get(entityId);
+        if (entity == null) return null;
+        if (entity.has(MetaDataComponent.class)) {
+            return entity.get(MetaDataComponent.class).name;
+        }
+        return "Entity " + entityId;
+    }
+
+    public void setName(int entityId, String name) {
+        Entity entity = entityMap.get(entityId);
+        if (entity == null) return;
+        if (entity.has(MetaDataComponent.class)) {
+            entity.get(MetaDataComponent.class).name = name;
+        } else {
+            entity.add(new MetaDataComponent(name));
+        }
+    }
+    
+    /** Return underlying Dominion entity map */
+    public Map<Integer, dev.dominion.ecs.api.Entity> getEntityMap() {
+        return entityMap;
     }
 }

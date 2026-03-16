@@ -44,7 +44,7 @@ public class EntityRow {
     public void cancelEdit() { editable.cancel(); }
     public void setExpanded(boolean val) { this.expanded = val; }
     public boolean isExpanded() { return this.expanded; }
-    public EditableLabel getEditable() { return this.editable; }
+    public game.engine.ui.components.InlineEditor getEditable() { return this.editable; }
 
     public void render(String displayName, Selection selection, List<ComponentType> components, Callback cb) {
         ImGui.pushID(entityId);
@@ -57,6 +57,7 @@ public class EntityRow {
         float fh = ImGui.getFrameHeight();
         float entityRowHeight = fh + 2f;
         boolean nodeExpanded;
+        
         // Helper to draw the tree node arrow with transparent header (so ImGui doesn't draw its hover box).
         final java.util.function.BiFunction<String, Integer, Boolean> hiddenNode = (id, flags) -> {
             ImGui.pushStyleColor(ImGuiCol.Header, 0);
@@ -115,7 +116,9 @@ public class EntityRow {
         }
 
         contextMenu.render(uiContext, builder -> {
-            builder.addItem("Add Component", () -> cb.onAddComponent(entityId));
+            // Use a submenu so the Add Component entry expands with the triangle and
+            // can show grouped Engine / Custom components (populated by the helper).
+            builder.addSubMenu("Add Component", sub -> ContextMenu.populateAddComponentMenu(uiContext, entityId, sub));
             builder.addItem("Rename Entity", () -> cb.onRename(entityId, null));
             builder.addSeparator();
             builder.addItem("Delete Entity", () -> cb.onDelete(entityId));

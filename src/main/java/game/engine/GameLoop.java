@@ -1,14 +1,10 @@
 package game.engine;
 
-
-import game.engine.ECS.EntityManager;
 import game.engine.input.InputManager;
 import game.engine.renderer.Renderer;
 import game.engine.renderer.OpenGLRenderer;
 import game.engine.renderer.RenderSurface;
 import game.engine.LevelEditor.LevelEditor;
-
-
 import game.engine.logging.Logger;
 
 /**
@@ -17,7 +13,6 @@ import game.engine.logging.Logger;
 public class GameLoop {
     private WindowHandler window;
     private InputManager input;
-    private EntityManager ecs;
     private Renderer renderer;
     private RenderSurface surface;
     private Time time;
@@ -28,7 +23,6 @@ public class GameLoop {
     public GameLoop() {
         Logger.info(Logger.ENGINE, "GameLoop created.");
         window = new WindowHandler("My Game");
-        ecs = new EntityManager();
     }
 
     private void start() {
@@ -45,10 +39,11 @@ public class GameLoop {
 
         renderer = new OpenGLRenderer(surface);
 
-        world = new World(ecs);
+        world = new World();
         world.initDemoEntities(window.getWidth(), window.getHeight());
+        
         // create shared editor and registry once
-        EntityRegistry registry = new EntityRegistry(ecs, world);
+        EntityRegistry registry = new EntityRegistry(world);
         editor = new LevelEditor(window.getHandle(), registry, this.stateManager);
     }
 
