@@ -4,9 +4,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.function.Supplier;
 
 /**
- * A simple, static, and performant logging utility for the game engine.
- * This class provides standard logging levels, lazy message evaluation,
- * and category-based filtering.
+ * A simple, static, and performant logging utility for the game engine. This
+ * class provides standard logging levels, lazy message evaluation, and
+ * category-based filtering.
  */
 public final class Logger {
 
@@ -16,6 +16,7 @@ public final class Logger {
     public static final String ENGINE = "Engine";
     public static final String INPUT = "Input";
     public static final String WORLD = "World";
+    public static final String UI = "UI";
 
     private static LogLevel minLevel = LogLevel.INFO;
     private static boolean showTime = true;
@@ -26,9 +27,14 @@ public final class Logger {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
     // Default fatal handler prints a clear colored banner then halts.
     private static Runnable fatalHandler = () -> {
-        if (useColors) System.err.println("\n" + Ansi.BRIGHT_RED + "--- FATAL ENGINE FAILURE ---" + Ansi.RESET);
-        else System.err.println("\n--- FATAL ENGINE FAILURE ---");
-        try { Thread.sleep(1200); } catch (InterruptedException ignored) {}
+        if (useColors)
+            System.err.println("\n" + Ansi.BRIGHT_RED + "--- FATAL ENGINE FAILURE ---" + Ansi.RESET);
+        else
+            System.err.println("\n--- FATAL ENGINE FAILURE ---");
+        try {
+            Thread.sleep(1200);
+        } catch (InterruptedException ignored) {
+        }
         Runtime.getRuntime().halt(1);
     };
 
@@ -43,55 +49,136 @@ public final class Logger {
         static final String BOLD = "\u001B[1m";
     }
 
-    private Logger() {}
+    private Logger() {
+    }
 
     // Configuration
     /** Sets the minimum log level required to be shown. */
-    public static void setMinLevel(LogLevel level) { minLevel = level; }
+    public static void setMinLevel(LogLevel level) {
+        minLevel = level;
+    }
+
     /** Convenience shortcut to set minimum level to WARN. */
-    public static void quiet() { setMinLevel(LogLevel.WARN); }
+    public static void quiet() {
+        setMinLevel(LogLevel.WARN);
+    }
+
     /** Convenience shortcut to set minimum level to DEBUG. */
-    public static void verbose() { setMinLevel(LogLevel.DEBUG); }
+    public static void verbose() {
+        setMinLevel(LogLevel.DEBUG);
+    }
+
     /** Convenience shortcut to set minimum level to TRACE. */
-    public static void veryVerbose() { setMinLevel(LogLevel.TRACE); }
+    public static void veryVerbose() {
+        setMinLevel(LogLevel.TRACE);
+    }
+
     /** Toggles the display of timestamps. */
-    public static void setShowTime(boolean show) { showTime = show; }
+    public static void setShowTime(boolean show) {
+        showTime = show;
+    }
+
     /** Toggles the display of the thread name. */
-    public static void setShowThread(boolean show) { showThread = show; }
+    public static void setShowThread(boolean show) {
+        showThread = show;
+    }
+
     /** Toggles the display of the category tag. */
-    public static void setShowCategory(boolean show) { showCategory = show; }
+    public static void setShowCategory(boolean show) {
+        showCategory = show;
+    }
+
     /** Sets a custom handler to run after a fatal log. */
-    public static void setFatalHandler(Runnable handler) { fatalHandler = handler; }
+    public static void setFatalHandler(Runnable handler) {
+        fatalHandler = handler;
+    }
+
     /** Enable or disable ANSI colors in console output. */
-    public static void setUseColors(boolean use) { useColors = use; }
+    public static void setUseColors(boolean use) {
+        useColors = use;
+    }
 
     // Public Logging API
-    public static void trace(String message) { log(LogLevel.TRACE, null, message); }
-    public static void trace(Supplier<String> msg) { log(LogLevel.TRACE, null, msg); }
-    public static void trace(String cat, String msg) { log(LogLevel.TRACE, cat, msg); }
-    public static void trace(String cat, Supplier<String> msg) { log(LogLevel.TRACE, cat, msg); }
+    public static void trace(String message) {
+        log(LogLevel.TRACE, null, message);
+    }
 
-    public static void debug(String message) { log(LogLevel.DEBUG, null, message); }
-    public static void debug(Supplier<String> msg) { log(LogLevel.DEBUG, null, msg); }
-    public static void debug(String cat, String msg) { log(LogLevel.DEBUG, cat, msg); }
-    public static void debug(String cat, Supplier<String> msg) { log(LogLevel.DEBUG, cat, msg); }
+    public static void trace(Supplier<String> msg) {
+        log(LogLevel.TRACE, null, msg);
+    }
 
-    public static void info(String message) { log(LogLevel.INFO, null, message); }
-    public static void info(String cat, String msg) { log(LogLevel.INFO, cat, msg); }
+    public static void trace(String cat, String msg) {
+        log(LogLevel.TRACE, cat, msg);
+    }
 
-    public static void warn(String message) { log(LogLevel.WARN, null, message); }
-    public static void warn(String cat, String msg) { log(LogLevel.WARN, cat, msg); }
+    public static void trace(String cat, Supplier<String> msg) {
+        log(LogLevel.TRACE, cat, msg);
+    }
 
-    public static void error(String message) { log(LogLevel.ERROR, null, message); }
-    public static void error(String cat, String msg) { log(LogLevel.ERROR, cat, msg); }
-    public static void error(String msg, Throwable t) { log(LogLevel.ERROR, null, msg, t); }
-    public static void error(String cat, String msg, Throwable t) { log(LogLevel.ERROR, cat, msg, t); }
+    public static void debug(String message) {
+        log(LogLevel.DEBUG, null, message);
+    }
 
-    public static void fatal(String message) { log(LogLevel.FATAL, null, message); }
-    public static void fatal(String cat, String msg) { log(LogLevel.FATAL, cat, msg); }
-    public static void fatal(Throwable t) { log(LogLevel.FATAL, null, t.getMessage(), t); }
-    public static void fatal(String msg, Throwable t) { log(LogLevel.FATAL, null, msg, t); }
-    
+    public static void debug(Supplier<String> msg) {
+        log(LogLevel.DEBUG, null, msg);
+    }
+
+    public static void debug(String cat, String msg) {
+        log(LogLevel.DEBUG, cat, msg);
+    }
+
+    public static void debug(String cat, Supplier<String> msg) {
+        log(LogLevel.DEBUG, cat, msg);
+    }
+
+    public static void info(String message) {
+        log(LogLevel.INFO, null, message);
+    }
+
+    public static void info(String cat, String msg) {
+        log(LogLevel.INFO, cat, msg);
+    }
+
+    public static void warn(String message) {
+        log(LogLevel.WARN, null, message);
+    }
+
+    public static void warn(String cat, String msg) {
+        log(LogLevel.WARN, cat, msg);
+    }
+
+    public static void error(String message) {
+        log(LogLevel.ERROR, null, message);
+    }
+
+    public static void error(String cat, String msg) {
+        log(LogLevel.ERROR, cat, msg);
+    }
+
+    public static void error(String msg, Throwable t) {
+        log(LogLevel.ERROR, null, msg, t);
+    }
+
+    public static void error(String cat, String msg, Throwable t) {
+        log(LogLevel.ERROR, cat, msg, t);
+    }
+
+    public static void fatal(String message) {
+        log(LogLevel.FATAL, null, message);
+    }
+
+    public static void fatal(String cat, String msg) {
+        log(LogLevel.FATAL, cat, msg);
+    }
+
+    public static void fatal(Throwable t) {
+        log(LogLevel.FATAL, null, t.getMessage(), t);
+    }
+
+    public static void fatal(String msg, Throwable t) {
+        log(LogLevel.FATAL, null, msg, t);
+    }
+
     // Assertion Helpers
     /** Checks a condition and logs a fatal error if it is false. */
     public static void check(boolean condition, String message) {
@@ -100,7 +187,10 @@ public final class Logger {
         }
     }
 
-    /** Checks a condition and logs a fatal error using a lazily-supplied message if it is false. */
+    /**
+     * Checks a condition and logs a fatal error using a lazily-supplied message
+     * if it is false.
+     */
     public static void check(boolean condition, Supplier<String> messageSupplier) {
         if (!condition) {
             log(LogLevel.FATAL, ENGINE, messageSupplier.get());
@@ -118,7 +208,7 @@ public final class Logger {
     private static void log(LogLevel level, String category, String message) {
         log(level, category, message, null);
     }
-    
+
     private static void log(LogLevel level, String category, String message, Throwable t) {
         if (level != LogLevel.FATAL && minLevel.ordinal() > level.ordinal()) {
             return;
@@ -154,7 +244,7 @@ public final class Logger {
                 t.printStackTrace(stream);
             }
         }
-        
+
         if (level == LogLevel.FATAL) {
             fatalHandler.run();
         }
@@ -162,13 +252,20 @@ public final class Logger {
 
     private static String getColor(LogLevel level) {
         switch (level) {
-            case TRACE: return Ansi.BRIGHT_BLACK;       // subtle
-            case DEBUG: return Ansi.BRIGHT_BLUE;        // developer-focused
-            case INFO:  return Ansi.BRIGHT_GREEN;       // positive/ok
-            case WARN:  return Ansi.BRIGHT_YELLOW;      // caution
-            case ERROR: return Ansi.BRIGHT_MAGENTA;     // visible and distinct
-            case FATAL: return Ansi.BOLD + Ansi.BRIGHT_RED; // urgent
-            default:    return Ansi.RESET;
+        case TRACE:
+            return Ansi.BRIGHT_BLACK; // subtle
+        case DEBUG:
+            return Ansi.BRIGHT_BLUE; // developer-focused
+        case INFO:
+            return Ansi.BRIGHT_GREEN; // positive/ok
+        case WARN:
+            return Ansi.BRIGHT_YELLOW; // caution
+        case ERROR:
+            return Ansi.BRIGHT_MAGENTA; // visible and distinct
+        case FATAL:
+            return Ansi.BOLD + Ansi.BRIGHT_RED; // urgent
+        default:
+            return Ansi.RESET;
         }
     }
 }

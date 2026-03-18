@@ -6,9 +6,11 @@ package game.engine.renderer;
 public class RenderContext {
     public final int width;
     public final int height;
-    public final float delta;
+    public final float deltaTime;
 
-    public RenderContext(int width, int height, float delta) {
-        this.width = width; this.height = height; this.delta = delta;
+    public RenderContext(int width, int height, float deltaTime) {
+        this.width = width;
+        this.height = height;
+        this.deltaTime = deltaTime;
     }
 }

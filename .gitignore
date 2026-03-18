@@ -1,0 +1,15 @@
+.vscode/
+
+# Maven / Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs and runtime files
+*.log
+*.tmp
+
+# User-specific ImGui config
+imgui.ini

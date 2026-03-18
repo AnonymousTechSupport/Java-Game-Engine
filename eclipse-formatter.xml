@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles version="12">
+  <profile kind="CodeFormatterProfile" name="MyProfile" version="12">
+    <!-- Maximum line length for code wrapping -->
+    <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="100"/>
+    <!-- Maximum line length for comment wrapping -->
+    <setting id="org.eclipse.jdt.core.formatter.comment.lineLength" value="120"/>
+  </profile>
+</profiles>

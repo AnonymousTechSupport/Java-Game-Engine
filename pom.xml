@@ -59,10 +59,27 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
-        </dependencies>
+        <dependency>
+            <groupId>org.joml</groupId>
+            <artifactId>joml</artifactId>
+            <version>1.10.5</version>
+        </dependency>
+    </dependencies>
     </dependencyManagement>
 
     <dependencies>
+    <!-- Dominion ECS API + Engine -->
+    <dependency>
+        <groupId>dev.dominion.ecs</groupId>
+        <artifactId>dominion-ecs-api</artifactId>
+        <version>0.9.0</version>
+    </dependency>
+    <dependency>
+        <groupId>dev.dominion.ecs</groupId>
+        <artifactId>dominion-ecs-engine</artifactId>
+        <version>0.9.0</version>
+        <scope>compile</scope>
+    </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl</artifactId>
@@ -105,6 +122,11 @@
             <groupId>io.github.spair</groupId>
             <artifactId>imgui-java-natives-windows</artifactId>
             <version>1.86.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.joml</groupId>
+            <artifactId>joml</artifactId>
+            <version>1.10.5</version>
         </dependency>
     </dependencies>
 
