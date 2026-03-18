@@ -30,8 +30,7 @@ public class World {
         this.dominion = Dominion.create();
         this.componentRegistry = new ComponentRegistry();
 
-        componentRegistry.register(ComponentType.TRANSFORM,
-                () -> new game.engine.ECS.components.TransformComponent(0, 0));
+        componentRegistry.register(ComponentType.TRANSFORM, () -> new game.engine.ECS.components.TransformComponent(0, 0));
         componentRegistry.register(ComponentType.RENDER, () -> new game.engine.ECS.components.RenderComponent());
         componentRegistry.register(ComponentType.CAMERA, () -> new game.engine.ECS.components.CameraComponent());
         componentRegistry.register(ComponentType.METADATA, () -> new MetaDataComponent("Entity"));
@@ -81,7 +80,7 @@ public class World {
     /**
      * Add a component of the specified type to the entity with the given ID.
      * 
-     * @param entityId      The integer ID of the entity to modify.
+     * @param entityId The integer ID of the entity to modify.
      * @param componentType The type of component to add
      */
     public void addComponent(int entityId, ComponentType componentType) {
@@ -92,15 +91,15 @@ public class World {
         // Prevent adding duplicate component types — Dominion ECS throws when
         // attempting to add the same component/class twice.
         if (entity.has(componentType.getComponentClass())) {
-            Logger.warn(Logger.WORLD,
-                    "Entity " + entityId + " already has component " + componentType.name() + "; skipping add.");
+            Logger.warn(Logger.WORLD, "Entity " + entityId + " already has component " + componentType.name() + "; skipping add.");
             return;
         }
 
         Component component = componentRegistry.createComponent(componentType);
         if (component != null) {
             entity.add(component);
-            // If the added component is a Camera and there is no main camera yet,
+            // If the added component is a Camera and there is no main camera
+            // yet,
             // set this entity as the main camera by default.
             if (componentType == ComponentType.CAMERA && this.mainCameraEntityId == -1) {
                 Logger.info(Logger.WORLD, "First camera added on entity " + entityId + ", setting as main camera.");
@@ -110,9 +109,10 @@ public class World {
     }
 
     /**
-     * Remove a component of the specified type from the entity with the given ID.
+     * Remove a component of the specified type from the entity with the given
+     * ID.
      * 
-     * @param entityId      The integer ID of the entity to modify.
+     * @param entityId The integer ID of the entity to modify.
      * @param componentType The type of component to remove.
      */
     public void removeComponent(int entityId, ComponentType componentType) {
@@ -156,7 +156,7 @@ public class World {
     /**
      * Retrieve a specific component associated with the given entity id.
      * 
-     * @param entityId      The integer ID of the entity to query.
+     * @param entityId The integer ID of the entity to query.
      * @param componentType The type of component to retrieve.
      * @return The component instance, or null if not found.
      */
@@ -181,8 +181,8 @@ public class World {
     }
 
     /**
-     * Remove all components associated with the given entity id.
-     * Centralizes component cleanup so callers can fully destroy an entity.
+     * Remove all components associated with the given entity id. Centralizes
+     * component cleanup so callers can fully destroy an entity.
      */
     public void removeAllComponents(int entityId) {
         Entity entity = entityMap.get(entityId);
@@ -217,7 +217,7 @@ public class World {
      * Set the name of the entity with the given ID.
      * 
      * @param entityId The integer ID of the entity to modify.
-     * @param name     The new name for the entity.
+     * @param name The new name for the entity.
      */
     public void setName(int entityId, String name) {
         Entity entity = entityMap.get(entityId);

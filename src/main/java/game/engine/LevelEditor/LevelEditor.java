@@ -8,8 +8,8 @@ import game.engine.ui.core.UIController;
 import game.engine.ui.panels.ViewportPanel;
 
 /**
- * The main class for the Level Editor UI.
- * This class is responsible for initializing and managing the ImGui layer and the UIManager.
+ * The main class for the Level Editor UI. This class is responsible for
+ * initializing and managing the ImGui layer and the UIManager.
  */
 public class LevelEditor {
     private final ImGuiLayer imGuiLayer;
@@ -20,25 +20,20 @@ public class LevelEditor {
         this.imGuiLayer = new ImGuiLayer();
         this.imGuiLayer.init(glfwWindow);
         this.uiManager = new UIManager(entityRegistry);
-        
+
         // Initialize ViewportPanel
-        this.viewportPanel = new ViewportPanel(
-            uiManager.getUIContext(), 
-            entityRegistry.getWorld(), 
-            entityRegistry.getWorld().getRenderingSystem(), 
-            renderer, 
-            stateManager,
-            uiManager.getSelectionService()
-        );
+        this.viewportPanel = new ViewportPanel(uiManager.getUIContext(), entityRegistry.getWorld(), entityRegistry.getWorld().getRenderingSystem(),
+                renderer, stateManager, uiManager.getSelectionService());
         this.uiManager.registerComponent(this.viewportPanel);
 
-        // Register the UIController which centralizes UI reactions to engine state
+        // Register the UIController which centralizes UI reactions to engine
+        // state
         // changes. The UIController will forward events to panels and run
         // cross-cutting policies such as cancelling edits on PLAYING.
         var uiController = new UIController(uiManager);
         stateManager.addListener(uiController);
     }
-    
+
     public ViewportPanel getViewportPanel() {
         return viewportPanel;
     }

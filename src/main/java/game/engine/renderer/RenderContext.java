@@ -9,6 +9,8 @@ public class RenderContext {
     public final float deltaTime;
 
     public RenderContext(int width, int height, float deltaTime) {
-        this.width = width; this.height = height; this.deltaTime = deltaTime;
+        this.width = width;
+        this.height = height;
+        this.deltaTime = deltaTime;
     }
 }

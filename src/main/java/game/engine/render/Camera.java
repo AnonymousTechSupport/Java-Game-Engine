@@ -5,8 +5,7 @@ import org.joml.Vector4f;
 import org.joml.Matrix4f;
 
 /**
- * Represents a 2D orthographic camera.
- * World coordinate system: +Y up.
+ * Represents a 2D orthographic camera. World coordinate system: +Y up.
  */
 public class Camera {
     public final Vector2f position = new Vector2f();
@@ -17,10 +16,14 @@ public class Camera {
         this.position.set(x, y);
     }
 
-    public Camera() { this(0f, 0f); }
+    public Camera() {
+        this(0f, 0f);
+    }
 
     /**
-     * Converts screen coordinates (pixels, top-left origin) to world coordinates.
+     * Converts screen coordinates (pixels, top-left origin) to world
+     * coordinates.
+     * 
      * @param screenX Pixel X from left
      * @param screenY Pixel Y from top
      * @param framebufferWidth Framebuffer width in pixels
@@ -37,8 +40,8 @@ public class Camera {
         pv.invert();
 
         // Convert screen pixel -> NDC
-        float ndcX = (screenX / (float)framebufferWidth) * 2.0f - 1.0f;
-        float ndcY = 1.0f - (screenY / (float)framebufferHeight) * 2.0f;
+        float ndcX = (screenX / (float) framebufferWidth) * 2.0f - 1.0f;
+        float ndcY = 1.0f - (screenY / (float) framebufferHeight) * 2.0f;
 
         Vector4f clip = new Vector4f(ndcX, ndcY, 0f, 1f);
         Vector4f world = pv.transform(clip);
@@ -50,19 +53,21 @@ public class Camera {
     }
 
     /**
-     * Construct the view matrix that transforms world coordinates into camera/view space.
-     * Matches the OpenGL renderer usage (glRotatef(-rotation); glTranslatef(-position)).
+     * Construct the view matrix that transforms world coordinates into
+     * camera/view space. Matches the OpenGL renderer usage
+     * (glRotatef(-rotation); glTranslatef(-position)).
      */
     public Matrix4f getViewMatrix() {
         Matrix4f view = new Matrix4f().identity();
         // Apply rotation then translation to match renderer: M = R * T
-        view.rotate((float)Math.toRadians(-rotation), 0f, 0f, 1f);
+        view.rotate((float) Math.toRadians(-rotation), 0f, 0f, 1f);
         view.translate(-position.x, -position.y, 0f);
         return view;
     }
 
     /**
-     * Construct an orthographic projection matching the renderer's glOrtho call.
+     * Construct an orthographic projection matching the renderer's glOrtho
+     * call.
      */
     public Matrix4f getProjectionMatrix(int framebufferWidth, int framebufferHeight) {
         float worldWidth = framebufferWidth / zoom;
@@ -75,8 +80,9 @@ public class Camera {
     }
 
     /**
-     * Convert a world-space position into framebuffer pixel coordinates (top-left origin).
-     * Uses the same projection/view matrices as the renderer.
+     * Convert a world-space position into framebuffer pixel coordinates
+     * (top-left origin). Uses the same projection/view matrices as the
+     * renderer.
      */
     public Vector2f worldToScreen(Vector2f worldPos, int framebufferWidth, int framebufferHeight) {
         Matrix4f proj = getProjectionMatrix(framebufferWidth, framebufferHeight);
@@ -98,6 +104,11 @@ public class Camera {
     }
 
     // Helper to get view/projection logic for renderer
-    public float getWorldWidth(int framebufferWidth) { return framebufferWidth / zoom; }
-    public float getWorldHeight(int framebufferHeight) { return framebufferHeight / zoom; }
+    public float getWorldWidth(int framebufferWidth) {
+        return framebufferWidth / zoom;
+    }
+
+    public float getWorldHeight(int framebufferHeight) {
+        return framebufferHeight / zoom;
+    }
 }

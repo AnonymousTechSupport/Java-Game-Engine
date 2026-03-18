@@ -16,11 +16,13 @@ import java.util.Objects;
 public class SelectionService {
 
     /**
-     * Listener interface for components that need to react to selection changes.
+     * Listener interface for components that need to react to selection
+     * changes.
      */
     public interface SelectionListener {
         /**
          * Called when the selected entity changes.
+         * 
          * @param newSelection the newly selected entity ID, or -1 if none.
          */
         void onSelectionChanged(Selection newSelection);
@@ -41,10 +43,9 @@ public class SelectionService {
         notifyListeners();
     }
 
-
     /**
-     * Clears the current selection (sets entity ID to -1) and notifies listeners
-     * if the selection was not already empty.
+     * Clears the current selection (sets entity ID to -1) and notifies
+     * listeners if the selection was not already empty.
      */
     public void clear() {
         if (this.selected == null) {
@@ -56,6 +57,7 @@ public class SelectionService {
 
     /**
      * Registers a listener to be notified of selection changes.
+     * 
      * @param listener The listener to add. Must not be null.
      */
     public void addListener(SelectionListener listener) {
@@ -65,6 +67,7 @@ public class SelectionService {
 
     /**
      * Unregisters a listener.
+     * 
      * @param listener The listener to remove.
      */
     public void removeListener(SelectionListener listener) {
@@ -76,11 +79,11 @@ public class SelectionService {
             try {
                 listener.onSelectionChanged(this.selected);
             } catch (Exception e) {
-                // Use project logger to record listener errors. We choose ENGINE
+                // Use project logger to record listener errors. We choose
+                // ENGINE
                 // category for now; creating a dedicated UI category could be
                 // implemented if needed.
-                game.engine.logging.Logger.error(game.engine.logging.Logger.UI,
-                        "Error in selection listener: " + e.getMessage(), e);
+                game.engine.logging.Logger.error(game.engine.logging.Logger.UI, "Error in selection listener: " + e.getMessage(), e);
             }
         }
     }

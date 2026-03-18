@@ -24,7 +24,8 @@ public class UIDropdown implements Widget {
             if (ImGui.combo(props.label, current, props.options, props.options.length)) {
                 props.selectedIndex = current.get();
                 try {
-                    if (props.onChange != null) props.onChange.accept(current.get());
+                    if (props.onChange != null)
+                        props.onChange.accept(current.get());
                 } catch (Exception e) {
                     game.engine.logging.Logger.error(game.engine.logging.Logger.UI, "UIDropdown handler failed: " + e.getMessage(), e);
                 }
@@ -34,5 +35,7 @@ public class UIDropdown implements Widget {
         }
     }
 
-    public int getSelectedIndex() { return current.get(); }
+    public int getSelectedIndex() {
+        return current.get();
+    }
 }

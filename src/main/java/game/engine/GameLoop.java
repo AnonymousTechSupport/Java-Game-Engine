@@ -65,8 +65,10 @@ public class GameLoop {
             }
 
             // Editor UI (which includes the game viewport) should always render
-            // Clear the default backbuffer before ImGui renders to avoid visual trails
-            // (we render the scene into an FBO; ImGui composes the UI onto the backbuffer).
+            // Clear the default backbuffer before ImGui renders to avoid visual
+            // trails
+            // (we render the scene into an FBO; ImGui composes the UI onto the
+            // backbuffer).
             if (window != null) {
                 window.render();
             }

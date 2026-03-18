@@ -13,8 +13,12 @@ public final class Entity {
     }
 
     /** Returns the integer entity id. */
-    public int getId() { return id; }
+    public int getId() {
+        return id;
+    }
 
     /** Returns the entity's display name. */
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 }

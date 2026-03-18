@@ -30,7 +30,8 @@ public class ImGuiLayer {
 
     public void endFrame() {
         ImGui.render();
-        // Ensure GL state expected by ImGui renderer is enabled to avoid artifacts
+        // Ensure GL state expected by ImGui renderer is enabled to avoid
+        // artifacts
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_CULL_FACE);

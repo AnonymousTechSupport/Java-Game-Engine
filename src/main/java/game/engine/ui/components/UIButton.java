@@ -20,7 +20,8 @@ public class UIButton implements Widget {
                 try {
                     props.onClick.accept(context);
                 } catch (Exception e) {
-                    // Safely swallow handler exceptions to avoid breaking the UI loop
+                    // Safely swallow handler exceptions to avoid breaking the
+                    // UI loop
                     game.engine.logging.Logger.error(game.engine.logging.Logger.UI, "Error in UIButton handler: " + e.getMessage(), e);
                 }
             }

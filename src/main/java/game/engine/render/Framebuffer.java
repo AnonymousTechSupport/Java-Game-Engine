@@ -6,7 +6,8 @@ import static org.lwjgl.opengl.GL30.*;
 import game.engine.logging.Logger;
 
 /**
- * Encapsulates an OpenGL Framebuffer Object (FBO) with a color texture and depth renderbuffer.
+ * Encapsulates an OpenGL Framebuffer Object (FBO) with a color texture and
+ * depth renderbuffer.
  */
 public class Framebuffer {
     private int framebufferId = 0;
@@ -44,7 +45,8 @@ public class Framebuffer {
     }
 
     public void resize(int width, int height) {
-        if (width == this.width && height == this.height) return;
+        if (width == this.width && height == this.height)
+            return;
         delete();
         create(width, height);
     }

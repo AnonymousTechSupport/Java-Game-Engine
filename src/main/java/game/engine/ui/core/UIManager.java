@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Manages the overall UI layout and hosts various UI components (panels, popups).
- * It is responsible for constructing and wiring together the various services and
- * contexts that the UI panels will use, such as the SelectionService, EditContext,
- * and RenameService.
+ * Manages the overall UI layout and hosts various UI components (panels,
+ * popups). It is responsible for constructing and wiring together the various
+ * services and contexts that the UI panels will use, such as the
+ * SelectionService, EditContext, and RenameService.
  */
 public class UIManager {
     private final List<UIComponent> components = new ArrayList<>();
@@ -52,20 +52,23 @@ public class UIManager {
     public UIEventQueue getUiEventQueue() {
         return uiEventQueue;
     }
-    public SelectionService getSelectionService() { return selectionService; }
-    
+
+    public SelectionService getSelectionService() {
+        return selectionService;
+    }
+
     public UIContext getUIContext() {
         return uiContext;
     }
-    
+
     public void registerComponent(UIComponent component) {
         components.add(component);
     }
 
     /**
-     * Cancels any active inline editor managed by the UI. This is a safe operation
-     * to call from external contexts, like a StateListener, to ensure UI state
-     * is cleaned up when, for example, exiting the editor.
+     * Cancels any active inline editor managed by the UI. This is a safe
+     * operation to call from external contexts, like a StateListener, to ensure
+     * UI state is cleaned up when, for example, exiting the editor.
      */
     public void cancelEdits() {
         if (this.editContext != null) {
@@ -79,8 +82,7 @@ public class UIManager {
             try {
                 c.onStateChanged(from, to);
             } catch (Exception e) {
-                game.engine.logging.Logger.error(game.engine.logging.Logger.UI,
-                        "Error in panel onStateChanged: " + e.getMessage(), e);
+                game.engine.logging.Logger.error(game.engine.logging.Logger.UI, "Error in panel onStateChanged: " + e.getMessage(), e);
             }
         }
     }
@@ -89,18 +91,22 @@ public class UIManager {
      * Renders the main UI layout and all registered components.
      */
     public void render() {
-        // Create a host dockspace that fills the main viewport. Panels are normal
+        // Create a host dockspace that fills the main viewport. Panels are
+        // normal
         // top-level windows and can be docked by the user.
         setupDockspace();
 
-        // If there are pending deferred UI actions, log a warning then flush them.
+        // If there are pending deferred UI actions, log a warning then flush
+        // them.
         if (uiEventQueue.hasPending()) {
             game.engine.logging.Logger.warn(game.engine.logging.Logger.UI, "Pending UI actions detected; flushing before render.");
         }
-        // Flush any pending UI-deferred actions so they execute before rendering.
+        // Flush any pending UI-deferred actions so they execute before
+        // rendering.
         uiEventQueue.flush();
 
-        // Render all registered components. Each component should call ImGui.begin()/end()
+        // Render all registered components. Each component should call
+        // ImGui.begin()/end()
         // with a stable window title if it wants to be dockable.
         for (UIComponent component : components) {
             component.render();
@@ -113,12 +119,8 @@ public class UIManager {
         ImGui.setNextWindowSize(vp.getWorkSizeX(), vp.getWorkSizeY());
         ImGui.setNextWindowViewport(vp.getID());
 
-        int hostFlags = ImGuiWindowFlags.NoTitleBar
-                | ImGuiWindowFlags.NoCollapse
-                | ImGuiWindowFlags.NoResize
-                | ImGuiWindowFlags.NoMove
-                | ImGuiWindowFlags.NoBringToFrontOnFocus
-                | ImGuiWindowFlags.NoBackground;
+        int hostFlags = ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove
+                | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoBackground;
 
         // Remove window padding so docked panels can touch the viewport edges.
         ImGui.pushStyleVar(imgui.flag.ImGuiStyleVar.WindowPadding, 0f, 0f);

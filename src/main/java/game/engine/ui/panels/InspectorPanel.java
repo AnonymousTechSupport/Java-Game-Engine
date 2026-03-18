@@ -39,7 +39,7 @@ public class InspectorPanel extends UIComponentWithContext implements SelectionS
     @Override
     public void render() {
         ImGui.begin("Inspector");
-        
+
         if (currentSelection != null) {
             if (currentSelection.isEntity()) {
                 renderEntityInspector(currentSelection.getEntityId());
@@ -56,50 +56,50 @@ public class InspectorPanel extends UIComponentWithContext implements SelectionS
     }
 
     private void renderEntityInspector(int entityId) {
-        // Since we are iterating and modifying components potentially, usually safe iteration is needed.
-        // But UI runs on main thread and modifications are deferred or immediate.
-        // We iterate over available component types to see if the entity has them.
-        
+        // Since we are iterating and modifying components potentially, usually
+        // safe iteration is needed.
+        // But UI runs on main thread and modifications are deferred or
+        // immediate.
+        // We iterate over available component types to see if the entity has
+        // them.
+
         for (ComponentType componentType : uiContext.getAvailableComponentTypes()) {
             Component component = entityRegistry.getComponent(entityId, componentType);
-            
+
             if (component != null) {
-                
-                ComponentHeaderProps props = new ComponentHeaderProps(
-                        componentType.name(),
-                        true,
-                        (Widget) (ctx) -> {
-                            // Push a stable ID so internal ImGui widgets (like "width") don't collide between components.
-                            imgui.ImGui.pushID(componentType.name() + "#" + entityId);
-                            // Render component inspector without an inline remove button — removal is in the header context menu.
-                            if (component instanceof CameraComponent) {
-                                ((CameraComponent) component).renderInspector(ctx, entityId);
-                            } else {
-                                component.renderInspector();
-                            }
-                            imgui.ImGui.popID();
-                        },
-                        null,
-                        builder -> {
-                            builder.addItem("Delete Component", () -> {
-                                // Remove immediately on the UI thread so the inspector updates without waiting a frame.
-                                entityRegistry.removeComponent(entityId, componentType);
-                                // If the removed component was selected in the inspector view, clear selection.
-                                if (currentSelection != null && currentSelection.isComponent()
-                                        && currentSelection.getEntityId() == entityId
-                                        && currentSelection.getComponentType() == componentType) {
-                                    selectionService.clear();
-                                }
-                            });
+
+                ComponentHeaderProps props = new ComponentHeaderProps(componentType.name(), true, (Widget) (ctx) -> {
+                    // Push a stable ID so internal ImGui widgets (like "width")
+                    // don't collide between components.
+                    imgui.ImGui.pushID(componentType.name() + "#" + entityId);
+                    // Render component inspector without an inline remove
+                    // button — removal is in the header context menu.
+                    if (component instanceof CameraComponent) {
+                        ((CameraComponent) component).renderInspector(ctx, entityId);
+                    } else {
+                        component.renderInspector();
+                    }
+                    imgui.ImGui.popID();
+                }, null, builder -> {
+                    builder.addItem("Delete Component", () -> {
+                        // Remove immediately on the UI thread so the inspector
+                        // updates without waiting a frame.
+                        entityRegistry.removeComponent(entityId, componentType);
+                        // If the removed component was selected in the
+                        // inspector view, clear selection.
+                        if (currentSelection != null && currentSelection.isComponent() && currentSelection.getEntityId() == entityId
+                                && currentSelection.getComponentType() == componentType) {
+                            selectionService.clear();
                         }
-                );
-                
+                    });
+                });
+
                 new ComponentHeader(props).render(uiContext);
             }
         }
 
         ImGui.separator();
-        
+
         // Add Component Button
         if (ImGui.button("Add Component")) {
             ImGui.openPopup("AddComponentPopup");
@@ -113,13 +113,14 @@ public class InspectorPanel extends UIComponentWithContext implements SelectionS
     }
 
     private void renderComponentInspector() {
-        if (currentSelection == null || !currentSelection.isComponent()) return;
-        
+        if (currentSelection == null || !currentSelection.isComponent())
+            return;
+
         Component component = entityRegistry.getComponent(currentSelection.getEntityId(), currentSelection.getComponentType());
         if (component != null) {
             ImGui.text(currentSelection.getComponentType().name());
             ImGui.separator();
-            
+
             // Push ID for safety
             ImGui.pushID(currentSelection.getComponentType().name() + "#" + currentSelection.getEntityId());
             if (component instanceof CameraComponent) {
@@ -134,14 +135,15 @@ public class InspectorPanel extends UIComponentWithContext implements SelectionS
         }
     }
 
-    // Builder used by ContextMenu.buildPopup to populate the add-component popup
+    // Builder used by ContextMenu.buildPopup to populate the add-component
+    // popup
     private void renderAddComponentMenuItemsBuilder(int entityId, ContextMenu.MenuBuilder builder) {
         builder.addGroup("Engine Components", group -> {
             for (ComponentType componentType : uiContext.getAvailableComponentTypes()) {
                 if (componentType.getCategory() == ComponentType.Category.ENGINE) {
                     // Filter out components the entity already has
                     if (entityRegistry.getComponent(entityId, componentType) == null) {
-                         group.addItem(componentType.name(), () -> uiContext.deferAddComponent(entityId, componentType));
+                        group.addItem(componentType.name(), () -> uiContext.deferAddComponent(entityId, componentType));
                     }
                 }
             }
@@ -152,9 +154,9 @@ public class InspectorPanel extends UIComponentWithContext implements SelectionS
         builder.addGroup("Custom Components", group -> {
             for (ComponentType componentType : uiContext.getAvailableComponentTypes()) {
                 if (componentType.getCategory() == ComponentType.Category.CUSTOM) {
-                     if (entityRegistry.getComponent(entityId, componentType) == null) {
-                         group.addItem(componentType.name(), () -> uiContext.deferAddComponent(entityId, componentType));
-                     }
+                    if (entityRegistry.getComponent(entityId, componentType) == null) {
+                        group.addItem(componentType.name(), () -> uiContext.deferAddComponent(entityId, componentType));
+                    }
                 }
             }
         });

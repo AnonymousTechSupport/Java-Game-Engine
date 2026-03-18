@@ -8,14 +8,15 @@ import java.util.ArrayList;
 
 /**
  * Small helper for rendering right-click context menus and generic
- * add-component popups. The class provides a fluent MenuBuilder for
- * building nested menu items and groups that execute actions or defer
- * UI operations via the provided UIContext.
+ * add-component popups. The class provides a fluent MenuBuilder for building
+ * nested menu items and groups that execute actions or defer UI operations via
+ * the provided UIContext.
  */
 public class ContextMenu {
 
     // Identifier used when the popup needs a stable id (not used by the
-    // beginPopupContextItem flow but retained for explicit openPopup/beginPopup use)
+    // beginPopupContextItem flow but retained for explicit openPopup/beginPopup
+    // use)
     private final String popupId;
 
     /**
@@ -29,16 +30,18 @@ public class ContextMenu {
 
     /**
      * Render a right-click context menu attached to the previously submitted
-     * ImGui item. The provided builder consumer is invoked to populate the
-     * menu contents. This method calls ImGui.beginPopupContextItem(), builds
-     * the menu and ends the popup if opened.
+     * ImGui item. The provided builder consumer is invoked to populate the menu
+     * contents. This method calls ImGui.beginPopupContextItem(), builds the
+     * menu and ends the popup if opened.
      *
-     * @param uiContext   context used by menu items to defer actions safely
+     * @param uiContext context used by menu items to defer actions safely
      * @param menuBuilder lambda that populates the MenuBuilder
      */
     public void render(UIContext uiContext, Consumer<MenuBuilder> menuBuilder) {
-        // Open context popup on right-click of the last item. beginPopupContextItem
-        // handles the input modality; use the overload without an explicit id so
+        // Open context popup on right-click of the last item.
+        // beginPopupContextItem
+        // handles the input modality; use the overload without an explicit id
+        // so
         // the popup is associated with the actual last item (more reliable).
         if (ImGui.beginPopupContextItem()) {
             MenuBuilder builder = new MenuBuilder();
@@ -53,7 +56,7 @@ public class ContextMenu {
      * useful for non-context popups (for example the "Add Component" popup)
      * where the popup is opened with ImGui.openPopup()/ImGui.beginPopup.
      *
-     * @param uiContext   context used by menu items to defer actions safely
+     * @param uiContext context used by menu items to defer actions safely
      * @param menuBuilder lambda that populates the MenuBuilder
      */
     public static void buildPopup(UIContext uiContext, Consumer<MenuBuilder> menuBuilder) {
@@ -61,13 +64,14 @@ public class ContextMenu {
         menuBuilder.accept(builder);
         builder.build(uiContext);
     }
+
     public static class MenuBuilder {
         private final List<MenuItem> items = new ArrayList<>();
         private Widget footer;
 
         /**
-         * Add a single selectable menu item that executes the given action
-         * when activated.
+         * Add a single selectable menu item that executes the given action when
+         * activated.
          */
         public MenuBuilder addItem(String label, Runnable action) {
             items.add(new MenuItem(label, action));
@@ -75,8 +79,8 @@ public class ContextMenu {
         }
 
         /**
-         * Add a nested submenu. The provided consumer receives a new MenuBuilder
-         * instance which should be populated with submenu entries.
+         * Add a nested submenu. The provided consumer receives a new
+         * MenuBuilder instance which should be populated with submenu entries.
          */
         public MenuBuilder addSubMenu(String label, java.util.function.Consumer<MenuBuilder> submenuBuilder) {
             MenuBuilder sub = new MenuBuilder();
@@ -137,7 +141,8 @@ public class ContextMenu {
             }
             if (footer != null) {
                 ImGui.separator();
-                footer.render(uiContext); // pass UIContext so footer actions can defer safely
+                footer.render(uiContext); // pass UIContext so footer actions
+                                          // can defer safely
             }
         }
     }
@@ -156,6 +161,7 @@ public class ContextMenu {
         MenuItem(String label, Runnable action, boolean isSeparator) {
             this(label, action, isSeparator, false, null);
         }
+
         MenuItem(String label, MenuBuilder submenu) {
             this(label, null, false, false, submenu);
         }
@@ -170,14 +176,14 @@ public class ContextMenu {
     }
 
     /**
-     * Populate the standard "Add Component" menu entries. This helper is
-     * used by both the Inspector and the per-entity context menu to produce
-     * grouped Engine / Custom component lists and wire them to deferred
-     * add-component actions on the supplied UIContext.
+     * Populate the standard "Add Component" menu entries. This helper is used
+     * by both the Inspector and the per-entity context menu to produce grouped
+     * Engine / Custom component lists and wire them to deferred add-component
+     * actions on the supplied UIContext.
      *
      * @param uiContext context used to defer add-component operations
-     * @param entityId  target entity id to which components will be added
-     * @param builder   menu builder to populate
+     * @param entityId target entity id to which components will be added
+     * @param builder menu builder to populate
      */
     public static void populateAddComponentMenu(UIContext uiContext, int entityId, MenuBuilder builder) {
         builder.addSubMenu("Engine Components", group -> {

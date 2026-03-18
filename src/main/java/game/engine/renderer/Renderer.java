@@ -5,13 +5,14 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 /**
- * Renderer abstraction / interface used by the engine. Implementations should manage
- * graphics API initialization in their constructors, per-frame rendering, and cleanup.
+ * Renderer abstraction / interface used by the engine. Implementations should
+ * manage graphics API initialization in their constructors, per-frame
+ * rendering, and cleanup.
  */
 public interface Renderer {
     /** Prepare the renderer for a new frame. */
     void beginFrame(RenderContext context);
-    
+
     /** Prepare the renderer for a new frame with a camera. */
     default void beginFrame(RenderContext context, Camera camera) {
         beginFrame(context); // Fallback if not implemented
@@ -24,9 +25,13 @@ public interface Renderer {
     void drawBall(Vector2f position, float radius, Vector4f color);
 
     void pushMatrix();
+
     void popMatrix();
+
     void translate(Vector2f offset);
+
     void rotate(float angle);
+
     void scale(Vector2f scale);
 
     /** Finish the frame and flush any pending GPU work. */

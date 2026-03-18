@@ -9,11 +9,12 @@ import org.lwjgl.glfw.GLFWKeyCallbackI;
  */
 
 /**
- * Manages keyboard input for the game.
- * This class sets up a GLFW key callback to track the state of keys and provides methods to
- * query whether specific keys are currently pressed, were just pressed, or were just released.
- * It also includes a method to reset per-frame input states, which should be called at the start of each frame.
- * The ESC key is handled to trigger a window close request when pressed or released.
+ * Manages keyboard input for the game. This class sets up a GLFW key callback
+ * to track the state of keys and provides methods to query whether specific
+ * keys are currently pressed, were just pressed, or were just released. It also
+ * includes a method to reset per-frame input states, which should be called at
+ * the start of each frame. The ESC key is handled to trigger a window close
+ * request when pressed or released.
  */
 public class InputManager {
     private final long windowHandle;
@@ -29,7 +30,10 @@ public class InputManager {
         GLFW.glfwSetKeyCallback(windowHandle, callback);
     }
 
-    /** Call at the start of each frame to reset per-frame pressed/released flags. */
+    /**
+     * Call at the start of each frame to reset per-frame pressed/released
+     * flags.
+     */
     public void beginFrame() {
         keyboard.resetFrame();
     }
@@ -40,16 +44,29 @@ public class InputManager {
     }
 
     // Expose keyboard query methods (limited surface)
-    public boolean isDown(Key key) { return keyboard.isDownIndex(key.getIndex()); }
-    public boolean wasPressed(Key key) { return keyboard.wasPressedIndex(key.getIndex()); }
-    public boolean wasReleased(Key key) { return keyboard.wasReleasedIndex(key.getIndex()); }
-    public void clearAll() { keyboard.clearAll(); }
+    public boolean isDown(Key key) {
+        return keyboard.isDownIndex(key.getIndex());
+    }
+
+    public boolean wasPressed(Key key) {
+        return keyboard.wasPressedIndex(key.getIndex());
+    }
+
+    public boolean wasReleased(Key key) {
+        return keyboard.wasReleasedIndex(key.getIndex());
+    }
+
+    public void clearAll() {
+        keyboard.clearAll();
+    }
 
     public void onKeyEvent(long win, int keyCode, int scancode, int action, int mods) {
         // Highest priority: state transitions
         if (action == GLFW.GLFW_PRESS) {
-            // F1: enter the game (PLAYING). Canceling edits is handled by the UIController
-            // via the StateManager listener which calls UIManager.cancelEdits().
+            // F1: enter the game (PLAYING). Canceling edits is handled by the
+            // UIController
+            // via the StateManager listener which calls
+            // UIManager.cancelEdits().
             if (keyCode == GLFW.GLFW_KEY_F1) {
                 stateManager.setState(game.engine.EngineState.PLAYING);
                 return;
@@ -63,7 +80,8 @@ public class InputManager {
         }
 
         // If UI wants keyboard (e.g., the user is typing into a field), consume
-        // non-global keys and let the UI handle them (for example, Escape should
+        // non-global keys and let the UI handle them (for example, Escape
+        // should
         // cancel an inline edit instead of toggling game pause while typing).
         if ((stateManager.isEditor() || stateManager.isPaused()) && imgui.ImGui.getIO().getWantCaptureKeyboard()) {
             return;

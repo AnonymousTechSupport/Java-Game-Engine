@@ -8,8 +8,9 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 /**
- * Small OpenGL renderer implementation manages rendering state.
- * It depends only on a RenderSurface for size information and has no knowledge of WindowHandler.
+ * Small OpenGL renderer implementation manages rendering state. It depends only
+ * on a RenderSurface for size information and has no knowledge of
+ * WindowHandler.
  */
 public class OpenGLRenderer implements Renderer {
     public OpenGLRenderer() {
@@ -75,8 +76,8 @@ public class OpenGLRenderer implements Renderer {
         glVertex2f(position.x, position.y);
         for (int i = 0; i <= segments; i++) {
             double theta = 2.0 * Math.PI * i / segments;
-            float dx = (float)(Math.cos(theta) * radius);
-            float dy = (float)(Math.sin(theta) * radius);
+            float dx = (float) (Math.cos(theta) * radius);
+            float dy = (float) (Math.sin(theta) * radius);
             glVertex2f(position.x + dx, position.y + dy);
         }
         glEnd();

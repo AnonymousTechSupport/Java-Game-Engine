@@ -8,8 +8,8 @@ import imgui.type.ImString;
 
 /**
  * A reusable inline editable label used across the editor UI. It encapsulates
- * the edit state, buffer, focus handling and provides a simple callback API
- * so callers can react to commit/cancel without duplicating UI logic.
+ * the edit state, buffer, focus handling and provides a simple callback API so
+ * callers can react to commit/cancel without duplicating UI logic.
  */
 public class EditableLabel implements InlineEditor {
     private final String id; // stable id for ImGui widgets
@@ -21,11 +21,13 @@ public class EditableLabel implements InlineEditor {
     /** Callback interface invoked on commit/cancel events. */
     public interface Callback {
         void onCommit(String newText);
+
         void onCancel();
     }
 
     /**
      * Create an editable label.
+     * 
      * @param id stable identifier (used in internal ImGui ids)
      * @param initialText initial visible text
      */
@@ -37,25 +39,35 @@ public class EditableLabel implements InlineEditor {
     }
 
     /** Update the visible text (used when external renames occur). */
-    public void setText(String text) { buffer.set(text == null ? "" : text); }
+    public void setText(String text) {
+        buffer.set(text == null ? "" : text);
+    }
 
     /**
-     * Programmatically start editing with an initial buffer. Called directly by callers.
+     * Programmatically start editing with an initial buffer. Called directly by
+     * callers.
      */
-    public void startEdit(String initial) { beginEditInternal(initial); }
+    public void startEdit(String initial) {
+        beginEditInternal(initial);
+    }
 
     /** Cancel the current edit and discard the buffer. */
     public void cancel() {
         editing = false;
         justOpened = false;
-        if (editContext != null) editContext.notifyClosed(this);
+        if (editContext != null)
+            editContext.notifyClosed(this);
     }
 
     /** Returns true while the label is in edit mode. */
-    public boolean isEditing() { return editing; }
+    public boolean isEditing() {
+        return editing;
+    }
 
     /**
-     * Begin editing immediately. Called by EditContext when it accepts a request.
+     * Begin editing immediately. Called by EditContext when it accepts a
+     * request.
+     * 
      * @param initial initial text to place in the buffer (may be null)
      */
     public void beginEditInternal(String initial) {
@@ -65,8 +77,11 @@ public class EditableLabel implements InlineEditor {
     }
 
     /**
-     * Request the edit context to start editing this entity. Returns true if edit started.
-     * @param entityId entity this editor represents (used by EditContext for matching)
+     * Request the edit context to start editing this entity. Returns true if
+     * edit started.
+     * 
+     * @param entityId entity this editor represents (used by EditContext for
+     * matching)
      */
     public boolean tryStart(int entityId) {
         if (editContext == null) {
@@ -77,11 +92,13 @@ public class EditableLabel implements InlineEditor {
     }
 
     /** Request focus for the current editor (called by EditContext). */
-    public void requestFocus() { justOpened = true; }
+    public void requestFocus() {
+        justOpened = true;
+    }
 
     /**
-     * Render the label inside a row of known height. Caller must supply
-     * the target rowHeight so the label can be vertically centered.
+     * Render the label inside a row of known height. Caller must supply the
+     * target rowHeight so the label can be vertically centered.
      *
      * @param labelVisible the human-readable label to display
      * @param entityId the entity id this label represents
@@ -106,9 +123,11 @@ public class EditableLabel implements InlineEditor {
 
             if (mouseDouble && hovered) {
                 boolean started = tryStart(entityId);
-                if (started && onSelect != null) onSelect.run();
+                if (started && onSelect != null)
+                    onSelect.run();
             } else if (mouseClicked && hovered) {
-                if (onSelect != null) onSelect.run();
+                if (onSelect != null)
+                    onSelect.run();
             }
         } else {
             float frameHeight = ImGui.getFrameHeight();
@@ -130,14 +149,16 @@ public class EditableLabel implements InlineEditor {
             if (ImGui.isKeyPressed(escKey)) {
                 editing = false;
                 cb.onCancel();
-                if (editContext != null) editContext.notifyClosed(this);
+                if (editContext != null)
+                    editContext.notifyClosed(this);
                 return;
             }
 
             if (submitted) {
                 editing = false;
                 cb.onCommit(buffer.get().trim());
-                if (editContext != null) editContext.notifyClosed(this);
+                if (editContext != null)
+                    editContext.notifyClosed(this);
             }
         }
     }

@@ -23,7 +23,8 @@ public class UIController implements game.engine.StateManager.StateListener {
             Logger.error(Logger.UI, "Error notifying panels of state change: " + e.getMessage());
         }
 
-        // Cross-cutting policy: when entering PLAYING, cancel any active inline edits
+        // Cross-cutting policy: when entering PLAYING, cancel any active inline
+        // edits
         if (to == game.engine.EngineState.PLAYING) {
             uiManager.cancelEdits();
         }

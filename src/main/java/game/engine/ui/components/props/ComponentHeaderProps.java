@@ -11,7 +11,8 @@ public final class ComponentHeaderProps extends game.engine.ui.components.Widget
     public final InlineActionBar actionBar;
     public final Consumer<game.engine.ui.components.ContextMenu.MenuBuilder> contextMenuBuilder;
 
-    public ComponentHeaderProps(String title, boolean initiallyOpen, Widget content, InlineActionBar actionBar, Consumer<game.engine.ui.components.ContextMenu.MenuBuilder> contextMenuBuilder) {
+    public ComponentHeaderProps(String title, boolean initiallyOpen, Widget content, InlineActionBar actionBar,
+            Consumer<game.engine.ui.components.ContextMenu.MenuBuilder> contextMenuBuilder) {
         this.title = title;
         this.initiallyOpen = initiallyOpen;
         this.content = content;

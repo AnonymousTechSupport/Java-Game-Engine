@@ -12,8 +12,8 @@ import java.util.Map;
 import game.engine.logging.Logger;
 
 /**
- * High-level entity registry used by tools (editor) to create/destroy named entities.
- * Delegates actual storage to World (Dominion ECS).
+ * High-level entity registry used by tools (editor) to create/destroy named
+ * entities. Delegates actual storage to World (Dominion ECS).
  */
 public class EntityRegistry {
     private final World world;
@@ -21,14 +21,16 @@ public class EntityRegistry {
     public EntityRegistry(World world) {
         this.world = world;
     }
-    
+
     public World getWorld() {
         return world;
     }
 
-    /** Create a named entity and return an Entity object, or null on failure. 
+    /**
+     * Create a named entity and return an Entity object, or null on failure.
+     * 
      * @return Entity object with id and name, or null if creation failed
-    */
+     */
     public Entity createEntity(String name) {
         int id = world.createEntity(name);
         // Assuming creation always succeeds with Dominion unless OOM
@@ -40,9 +42,9 @@ public class EntityRegistry {
     public List<Entity> listEntities() {
         List<Entity> out = new ArrayList<>();
         Map<Integer, dev.dominion.ecs.api.Entity> map = world.getEntityMap();
-        
+
         Logger.trace(Logger.WORLD, () -> "Listing entities for UI refresh; count=" + map.size());
-        
+
         for (Map.Entry<Integer, dev.dominion.ecs.api.Entity> entry : map.entrySet()) {
             int id = entry.getKey();
             dev.dominion.ecs.api.Entity domEntity = entry.getValue();
@@ -58,7 +60,8 @@ public class EntityRegistry {
     /** Get an Entity object, or null if id inactive. */
     public Entity getEntity(int id) {
         dev.dominion.ecs.api.Entity domEntity = world.getEntityMap().get(id);
-        if (domEntity == null) return null;
+        if (domEntity == null)
+            return null;
 
         String name = "Entity " + id;
         if (domEntity.has(MetaDataComponent.class)) {
@@ -73,14 +76,14 @@ public class EntityRegistry {
             Logger.warn(Logger.WORLD, "Rename failed: unknown entity id=" + id);
             return false;
         }
-        
+
         dev.dominion.ecs.api.Entity domEntity = world.getEntityMap().get(id);
         if (domEntity.has(MetaDataComponent.class)) {
             domEntity.get(MetaDataComponent.class).name = newName;
         } else {
             domEntity.add(new MetaDataComponent(newName));
         }
-        
+
         Logger.info(Logger.WORLD, "Renamed entity " + id + " -> \"" + newName + "\"");
         return true;
     }
@@ -92,7 +95,8 @@ public class EntityRegistry {
             return false;
         }
         Logger.debug(Logger.WORLD, () -> "Destroying entity " + id);
-        world.removeAllComponents(id); // This actually deletes the entity in World implementation
+        world.removeAllComponents(id); // This actually deletes the entity in
+                                       // World implementation
         Logger.info(Logger.WORLD, "Destroyed entity " + id);
         return true;
     }
@@ -116,11 +120,11 @@ public class EntityRegistry {
     public ComponentType[] getAvailableComponentTypes() {
         return world.getAvailableComponentTypes();
     }
-    
+
     public int getMainCameraEntityId() {
         return world.getMainCameraEntityId();
     }
-    
+
     public void setMainCameraEntityId(int id) {
         world.setMainCameraEntityId(id);
     }

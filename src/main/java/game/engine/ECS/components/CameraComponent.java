@@ -24,10 +24,12 @@ public class CameraComponent implements Component, Serializable {
         this(0, 0, 1.0f);
     }
 
-    // Transient ImFloat buffers used by the inspector to retain widget state across frames
-    // Use descriptive names so intent is clear when debugging inspector behavior.
+    // Transient ImFloat buffers used by the inspector to retain widget state
+    // across frames
+    // Use descriptive names so intent is clear when debugging inspector
+    // behavior.
     private transient ImFloat posXBuffer, posYBuffer, rotationBuffer, zoomBuffer;
-    
+
     public Camera toCamera() {
         Camera c = new Camera(position.x, position.y);
         c.rotation = rotation;
@@ -57,11 +59,12 @@ public class CameraComponent implements Component, Serializable {
         }
         if (ImGui.inputFloat("Zoom", zoomBuffer, 0.1f, 1.0f, "%.2f")) {
             zoom = zoomBuffer.get();
-            if (zoom < 0.1f) zoom = 0.1f;
+            if (zoom < 0.1f)
+                zoom = 0.1f;
         }
-        
+
         ImGui.separator();
-        
+
         int mainCamId = ctx.getMainCameraEntityId();
         if (mainCamId == entityId) {
             ImGui.textColored(0, 1, 0, 1, "Main Camera (Default)");
@@ -74,12 +77,16 @@ public class CameraComponent implements Component, Serializable {
 
     // Ensure transient buffers exist and are seeded from component fields.
     private void ensureInspectorBuffers() {
-        if (posXBuffer == null) posXBuffer = new ImFloat(position.x);
-        if (posYBuffer == null) posYBuffer = new ImFloat(position.y);
-        if (rotationBuffer == null) rotationBuffer = new ImFloat(rotation);
-        if (zoomBuffer == null) zoomBuffer = new ImFloat(zoom);
+        if (posXBuffer == null)
+            posXBuffer = new ImFloat(position.x);
+        if (posYBuffer == null)
+            posYBuffer = new ImFloat(position.y);
+        if (rotationBuffer == null)
+            rotationBuffer = new ImFloat(rotation);
+        if (zoomBuffer == null)
+            zoomBuffer = new ImFloat(zoom);
     }
-    
+
     @Override
     public void renderInspector() {
         ImGui.text("Requires UI Context for full inspection.");

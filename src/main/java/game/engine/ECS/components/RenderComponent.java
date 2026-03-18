@@ -7,11 +7,14 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 /**
- * Generic renderable that can represent different primitive types (rectangle, ball, texture).
- * Start with RECTANGLE and BALL. Inspector shows a type dropdown and only the fields for the chosen type.
+ * Generic renderable that can represent different primitive types (rectangle,
+ * ball, texture). Start with RECTANGLE and BALL. Inspector shows a type
+ * dropdown and only the fields for the chosen type.
  */
 public class RenderComponent implements Component {
-    public enum RenderType { RECTANGLE, BALL /*, TEXTURE */ }
+    public enum RenderType {
+        RECTANGLE, BALL
+        /* , TEXTURE */ }
 
     public RenderType type = RenderType.RECTANGLE;
 
@@ -26,9 +29,11 @@ public class RenderComponent implements Component {
     public Vector4f color = new Vector4f(1f, 1f, 1f, 1f);
     public int zIndex = 0;
 
-    public RenderComponent() {}
+    public RenderComponent() {
+    }
 
-    // Persistent ImGui buffers so inspector widgets keep focus/state across frames
+    // Persistent ImGui buffers so inspector widgets keep focus/state across
+    // frames
     private transient ImInt renderTypeIndexBuffer;
     private transient ImInt widthBuffer;
     private transient ImInt heightBuffer;
@@ -56,20 +61,32 @@ public class RenderComponent implements Component {
                 radius = radiusBuffer.get();
             }
         }
-        if (ImGui.inputFloat("Red", rBuffer)) color.x = rBuffer.get();
-        if (ImGui.inputFloat("Green", gBuffer)) color.y = gBuffer.get();
-        if (ImGui.inputFloat("Blue", bBuffer)) color.z = bBuffer.get();
-        if (ImGui.inputFloat("Alpha", aBuffer)) color.w = aBuffer.get();
+        if (ImGui.inputFloat("Red", rBuffer))
+            color.x = rBuffer.get();
+        if (ImGui.inputFloat("Green", gBuffer))
+            color.y = gBuffer.get();
+        if (ImGui.inputFloat("Blue", bBuffer))
+            color.z = bBuffer.get();
+        if (ImGui.inputFloat("Alpha", aBuffer))
+            color.w = aBuffer.get();
     }
 
     private void ensureInspectorBuffers() {
-        if (renderTypeIndexBuffer == null) renderTypeIndexBuffer = new ImInt(type.ordinal());
-        if (widthBuffer == null) widthBuffer = new ImInt((int)size.x);
-        if (heightBuffer == null) heightBuffer = new ImInt((int)size.y);
-        if (radiusBuffer == null) radiusBuffer = new ImFloat(radius);
-        if (rBuffer == null) rBuffer = new ImFloat(color.x);
-        if (gBuffer == null) gBuffer = new ImFloat(color.y);
-        if (bBuffer == null) bBuffer = new ImFloat(color.z);
-        if (aBuffer == null) aBuffer = new ImFloat(color.w);
+        if (renderTypeIndexBuffer == null)
+            renderTypeIndexBuffer = new ImInt(type.ordinal());
+        if (widthBuffer == null)
+            widthBuffer = new ImInt((int) size.x);
+        if (heightBuffer == null)
+            heightBuffer = new ImInt((int) size.y);
+        if (radiusBuffer == null)
+            radiusBuffer = new ImFloat(radius);
+        if (rBuffer == null)
+            rBuffer = new ImFloat(color.x);
+        if (gBuffer == null)
+            gBuffer = new ImFloat(color.y);
+        if (bBuffer == null)
+            bBuffer = new ImFloat(color.z);
+        if (aBuffer == null)
+            aBuffer = new ImFloat(color.w);
     }
 }

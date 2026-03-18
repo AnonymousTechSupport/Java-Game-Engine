@@ -20,14 +20,16 @@ public class InlineActionBar implements Widget {
         // Estimate width for inline actions and align them to the right side of
         // the content region so they don't overlap the selectable/label area.
         int count = actions.size();
-        if (count == 0) return;
+        if (count == 0)
+            return;
         float estimatedWidth = count * 26f; // approx per-button width
         float targetX = ImGui.getContentRegionMaxX() - estimatedWidth;
         ImGui.sameLine(targetX);
         for (int i = 0; i < actions.size(); i++) {
             Widget action = actions.get(i);
             action.render(context);
-            if (i < actions.size() - 1) ImGui.sameLine();
+            if (i < actions.size() - 1)
+                ImGui.sameLine();
         }
     }
 }

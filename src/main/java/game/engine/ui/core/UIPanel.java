@@ -12,8 +12,10 @@ public interface UIPanel {
     void render();
 
     /**
-     * Called when the global engine state changes (e.g. from EDITOR -> PLAYING).
-     * Panels may react to the state transition (cancel edits, hide/show content).
+     * Called when the global engine state changes (e.g. from EDITOR ->
+     * PLAYING). Panels may react to the state transition (cancel edits,
+     * hide/show content).
      */
-    default void onStateChanged(game.engine.EngineState from, game.engine.EngineState to) { }
+    default void onStateChanged(game.engine.EngineState from, game.engine.EngineState to) {
+    }
 }

@@ -3,8 +3,8 @@ package game.engine.ui.core;
 import game.engine.EntityRegistry;
 
 /**
- * A base class for UI components that provides access to shared resources
- * like the entity registry.
+ * A base class for UI components that provides access to shared resources like
+ * the entity registry.
  */
 public abstract class UIComponent implements UIPanel {
     protected final EntityRegistry entityRegistry;

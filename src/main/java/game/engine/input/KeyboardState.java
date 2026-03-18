@@ -7,10 +7,10 @@ import java.util.Arrays;
  */
 
 /**
- * Internal class to track the state of keys. This is not exposed outside of the input package.
- * It maintains arrays for whether each key is currently down, was pressed this frame, or was
- * released this frame. The InputManager class manages the lifecycle of these states and provides
- * methods to query them.
+ * Internal class to track the state of keys. This is not exposed outside of the
+ * input package. It maintains arrays for whether each key is currently down,
+ * was pressed this frame, or was released this frame. The InputManager class
+ * manages the lifecycle of these states and provides methods to query them.
  */
 class KeyboardState {
     private final boolean[] down;
@@ -27,14 +27,24 @@ class KeyboardState {
         boolean prev = down[idx];
         if (prev != isDown) {
             down[idx] = isDown;
-            if (isDown) pressed[idx] = true;
-            else released[idx] = true;
+            if (isDown)
+                pressed[idx] = true;
+            else
+                released[idx] = true;
         }
     }
 
-    boolean isDownIndex(int idx) { return down[idx]; }
-    boolean wasPressedIndex(int idx) { return pressed[idx]; }
-    boolean wasReleasedIndex(int idx) { return released[idx]; }
+    boolean isDownIndex(int idx) {
+        return down[idx];
+    }
+
+    boolean wasPressedIndex(int idx) {
+        return pressed[idx];
+    }
+
+    boolean wasReleasedIndex(int idx) {
+        return released[idx];
+    }
 
     void resetFrame() {
         Arrays.fill(pressed, false);

@@ -31,9 +31,7 @@ public class ViewportPanel extends UIComponentWithContext {
     private final game.engine.StateManager stateManager;
     private final SelectionService selectionService;
 
-    public ViewportPanel(UIContext context, World world,
-            RenderingSystem renderingSystem, Renderer renderer,
-            game.engine.StateManager stateManager,
+    public ViewportPanel(UIContext context, World world, RenderingSystem renderingSystem, Renderer renderer, game.engine.StateManager stateManager,
             SelectionService selectionService) {
         super(context);
         this.world = world;
@@ -43,17 +41,18 @@ public class ViewportPanel extends UIComponentWithContext {
         this.framebuffer = new Framebuffer();
         this.editorCameraController = new EngineCameraController();
         this.selectionService = selectionService;
-        // Give editorCameraController a reasonable default smoothing for immediate
+        // Give editorCameraController a reasonable default smoothing for
+        // immediate
         // response
         this.editorCameraController.setSmoothness(18.0f);
     }
 
-    // Convert a point in world space to image pixel coordinates inside the ImGui
+    // Convert a point in world space to image pixel coordinates inside the
+    // ImGui
     // image. Returns a Vector2f where x/y are image pixel coordinates and
     // (imageTopLeftX, imageTopLeftY) is the top-left of the image.
-    private Vector2f worldToScreen(Vector2f worldPos, Camera viewCamera,
-            int framebufferWidth, int framebufferHeight,
-            float imageTopLeftX, float imageTopLeftY) {
+    private Vector2f worldToScreen(Vector2f worldPos, Camera viewCamera, int framebufferWidth, int framebufferHeight, float imageTopLeftX,
+            float imageTopLeftY) {
         Vector2f pixel = viewCamera.worldToScreen(worldPos, framebufferWidth, framebufferHeight);
         return pixel.add(imageTopLeftX, imageTopLeftY);
     }
@@ -75,11 +74,10 @@ public class ViewportPanel extends UIComponentWithContext {
         Camera activeCamera = null;
         int mainCameraId = world.getMainCameraEntityId();
 
-        // Use game camera when playing OR when paused (so paused shows game camera)
-        if ((stateManager.isPlaying() || stateManager.isPaused()) &&
-                mainCameraId != -1) {
-            CameraComponent cameraComponent = (CameraComponent) world.getComponent(
-                    mainCameraId, ComponentType.CAMERA);
+        // Use game camera when playing OR when paused (so paused shows game
+        // camera)
+        if ((stateManager.isPlaying() || stateManager.isPaused()) && mainCameraId != -1) {
+            CameraComponent cameraComponent = (CameraComponent) world.getComponent(mainCameraId, ComponentType.CAMERA);
             if (cameraComponent != null) {
                 activeCamera = cameraComponent.toCamera();
             }
@@ -98,15 +96,13 @@ public class ViewportPanel extends UIComponentWithContext {
             deltaTime = stateManager.getDelta();
         } catch (Exception ignored) {
         }
-        renderingSystem.renderToFramebuffer(framebuffer, activeCamera, world,
-                renderer, deltaTime);
+        renderingSystem.renderToFramebuffer(framebuffer, activeCamera, world, renderer, deltaTime);
 
         if (previousFramebufferId != 0)
             GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, previousFramebufferId);
 
         // Draw the framebuffer texture into the ImGui image (flip vertically)
-        ImGui.image(framebuffer.getTextureId(), (float) availableWidth,
-                (float) availableHeight, 0, 1, 1, 0);
+        ImGui.image(framebuffer.getTextureId(), (float) availableWidth, (float) availableHeight, 0, 1, 1, 0);
 
         // Get image rectangle on screen for overlays
         imgui.ImVec2 imageMin = ImGui.getItemRectMin();
@@ -119,15 +115,15 @@ public class ViewportPanel extends UIComponentWithContext {
             drawPlayOutline(imageMin.x, imageMin.y, imageMax.x, imageMax.y);
         }
 
-        // If a camera entity or camera component is selected, draw its capture rect
+        // If a camera entity or camera component is selected, draw its capture
+        // rect
         try {
             if (selectionService != null) {
                 game.engine.ui.services.Selection selection = selectionService.getSelected();
                 int selectedEntityId = -1;
                 boolean isSelectedCameraComponent = false;
                 if (selection != null) {
-                    if (selection.isComponent() &&
-                            selection.getComponentType() == ComponentType.CAMERA) {
+                    if (selection.isComponent() && selection.getComponentType() == ComponentType.CAMERA) {
                         selectedEntityId = selection.getEntityId();
                         isSelectedCameraComponent = true;
                     } else if (selection.isEntity()) {
@@ -140,20 +136,20 @@ public class ViewportPanel extends UIComponentWithContext {
                 }
 
                 if (isSelectedCameraComponent && selectedEntityId != -1) {
-                    CameraComponent cameraComponent = (CameraComponent) world.getComponent(
-                            selectedEntityId, ComponentType.CAMERA);
+                    CameraComponent cameraComponent = (CameraComponent) world.getComponent(selectedEntityId, ComponentType.CAMERA);
                     if (cameraComponent != null) {
-                        drawCameraSelectionOverlay(cameraComponent, activeCamera,
-                                imageTopLeftX, imageTopLeftY);
+                        drawCameraSelectionOverlay(cameraComponent, activeCamera, imageTopLeftX, imageTopLeftY);
                     }
                 }
             }
         } catch (Exception e) {
-            // In case selection service is not available or any error occurs, just
+            // In case selection service is not available or any error occurs,
+            // just
             // skip drawing the overlay
         }
 
-        // Input Handling: only update editor camera when viewport is hovered and
+        // Input Handling: only update editor camera when viewport is hovered
+        // and
         // we're in the editor
         if (ImGui.isItemHovered()) {
             handleEditorCameraInput();
@@ -169,8 +165,7 @@ public class ViewportPanel extends UIComponentWithContext {
 
     // Ensure the framebuffer matches the requested size.
     private void ensureFramebufferSize(int requestedWidth, int requestedHeight) {
-        if (requestedWidth != framebuffer.getWidth() ||
-                requestedHeight != framebuffer.getHeight()) {
+        if (requestedWidth != framebuffer.getWidth() || requestedHeight != framebuffer.getHeight()) {
             framebuffer.resize(requestedWidth, requestedHeight);
         }
     }
@@ -185,17 +180,13 @@ public class ViewportPanel extends UIComponentWithContext {
         final float rounding = 0f;
         final int color = ImGui.getColorU32(0f, 1f, 0f, 1f); // green
 
-        ImGui.getWindowDrawList().addRect(x0, y0, x1, y1, color, rounding, 0,
-                thickness);
+        ImGui.getWindowDrawList().addRect(x0, y0, x1, y1, color, rounding, 0, thickness);
     }
 
     // Draw the rotated capture rectangle for the selected camera.
     // Steps: compute camera half-extents in world units, rotate local corners
     // into world-space, project each corner into image pixels, then draw edges.
-    private void drawCameraSelectionOverlay(CameraComponent cameraComponent,
-            Camera viewCamera,
-            float imageTopLeftX,
-            float imageTopLeftY) {
+    private void drawCameraSelectionOverlay(CameraComponent cameraComponent, Camera viewCamera, float imageTopLeftX, float imageTopLeftY) {
         int framebufferWidth = framebuffer.getWidth();
         int framebufferHeight = framebuffer.getHeight();
         if (framebufferWidth <= 0 || framebufferHeight <= 0)
@@ -206,18 +197,15 @@ public class ViewportPanel extends UIComponentWithContext {
         float halfHeight = (framebufferHeight / cameraComponent.zoom) * 0.5f;
 
         // Local unrotated corners (clockwise)
-        Vector2f[] localCorners = new Vector2f[] {
-                new Vector2f(-halfWidth, -halfHeight),
-                new Vector2f(halfWidth, -halfHeight),
-                new Vector2f(halfWidth, halfHeight),
-                new Vector2f(-halfWidth, halfHeight)
-        };
+        Vector2f[] localCorners = new Vector2f[] { new Vector2f(-halfWidth, -halfHeight), new Vector2f(halfWidth, -halfHeight),
+                new Vector2f(halfWidth, halfHeight), new Vector2f(-halfWidth, halfHeight) };
 
         float rotationRadians = (float) Math.toRadians(cameraComponent.rotation);
         float cosRotation = (float) Math.cos(rotationRadians);
         float sinRotation = (float) Math.sin(rotationRadians);
 
-        // project corners to image pixel coordinates (include image top-left offset)
+        // project corners to image pixel coordinates (include image top-left
+        // offset)
         Vector2f[] screenPoly = new Vector2f[localCorners.length];
         for (int i = 0; i < localCorners.length; ++i) {
             float localX = localCorners[i].x;
@@ -226,9 +214,10 @@ public class ViewportPanel extends UIComponentWithContext {
             float worldX = localX * cosRotation - localY * sinRotation + cameraComponent.position.x;
             float worldY = localX * sinRotation + localY * cosRotation + cameraComponent.position.y;
 
-            // world -> screen pixel coords (Camera.worldToScreen) and then add image offset
-            screenPoly[i] = worldToScreen(new Vector2f(worldX, worldY), viewCamera, framebuffer.getWidth(),
-                    framebuffer.getHeight(), imageTopLeftX, imageTopLeftY);
+            // world -> screen pixel coords (Camera.worldToScreen) and then add
+            // image offset
+            screenPoly[i] = worldToScreen(new Vector2f(worldX, worldY), viewCamera, framebuffer.getWidth(), framebuffer.getHeight(), imageTopLeftX,
+                    imageTopLeftY);
         }
 
         // Draw polygon outline in pink/purple
