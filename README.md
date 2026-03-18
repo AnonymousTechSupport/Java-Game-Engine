@@ -1,55 +1,57 @@
 # Java Game Engine
 
-A lightweight 2D game engine written in Java, designed for simplicity and modularity. It provides a foundational ECS (Entity-Component-System) architecture, a decoupled rendering pipeline using OpenGL, and basic window and input management via LWJGL.
+Lightweight 2D game engine in Java with a simple ECS, OpenGL rendering (via LWJGL), basic window/input handling and an ImGui-based editor layer.
 
-## Project Specifications
+Key points
 
-*   **Language**: Java 11+
-*   **Build Tool**: Maven
-*   **Core Libraries**:
-    *   **LWJGL 3**: A low-level Java library that provides access to native APIs like OpenGL.
-        *   **OpenGL**: Used for hardware-accelerated 2D rendering.
-        *   **GLFW**: Used for creating and managing windows, contexts, and user input.
+- Language: Java 17 (configured in `pom.xml`)
+- Build: Maven (`pom.xml`) with platform profiles for LWJGL natives (`windows`, `macos`, `linux`)
+- Core libs: LWJGL 3, ImGui Java bindings, JOML, Dominion ECS
 
-## Folder Structure
+Quick start
 
-*   `src/main/java/game/engine/`: The root package for all engine source code.
-    *   `ECS/`: Contains the Entity-Component-System implementation, including components and systems.
-    *   `input/`: Handles user input management, wrapping GLFW callbacks.
-    *   `logging/`: Provides a simple, static utility for logging engine events.
-    *   `renderer/`: Manages the rendering pipeline, with abstractions for different rendering APIs.
-*   `pom.xml`: The Maven project file, defining dependencies and build settings.
-
-## How to Build and Run
-
-### Prerequisites
-
-*   Java Development Kit (JDK) 11 or newer.
-*   Apache Maven.
-
-### Cloning the Project
-
-To get a local copy of the project, clone the repository using Git:
+- Requirements: JDK 17+, Maven
+- Clone the repo and build:
 
 ```bash
-git clone <repository-url>
-cd <repository-directory>
-```
-
-### Building with Maven
-
-The project is managed by Maven, which handles dependency resolution and compilation. To build the project, run the following command from the root directory:
-
-```bash
+git clone <repo-url>
+cd <repo-directory>
 mvn clean install
 ```
 
-This will compile the source code and package it into a JAR file in the `target/` directory.
-
-### Running the Engine
-
-After a successful build, you can run the main application entry point:
+- Run the engine (uses the main class `game.engine.Main`):
 
 ```bash
 mvn exec:java -Dexec.mainClass="game.engine.Main"
 ```
+
+Project layout
+
+- `src/main/java/game/engine/` — root package
+  - `ECS/` — entity, components, systems and templates (`Entity`, components, `RenderingSystem`)
+  - `input/` — input and key state handling (`InputManager`, `KeyboardState`)
+  - `renderer/` and `render/` — renderer abstractions and OpenGL implementation (`Renderer`, `OpenGLRenderer`, `RenderContext`, `Framebuffer`, `Camera`)
+  - `ui/` — ImGui-based editor: panels, components and services (scene hierarchy, inspector, viewport)
+  - `LevelEditor/` — editor-specific classes and camera controller
+  - `logging/` — lightweight logger (`Logger`, `LogLevel`)
+  - core classes: `Main`, `GameLoop`, `World`, `Time`, `StateManager`, `EntityRegistry`, `ComponentRegistry`
+
+Dependencies and notes
+
+- Native LWJGL libraries are selected by Maven profiles in `pom.xml` (look for `lwjgl.natives`).
+- ImGui Java bindings are included and used for the in-engine editor layer (`ImGuiLayer` and UI components under `ui/components`).
+- Dominion ECS dependencies are present (`dominion-ecs-api`, `dominion-ecs-engine`).
+
+Development
+
+- Use `mvn clean install` to compile and package.
+- Run the main entry with `mvn exec:java -Dexec.mainClass="game.engine.Main"`.
+- The codebase targets a modular, extensible engine core; add systems or components under `ECS/` and register them via `EntityRegistry`/`ComponentRegistry`.
+
+Useful files
+
+- `pom.xml` — build, dependencies and platform profiles
+- `src/main/java/game/engine/Main.java` — application entry point
+- `src/main/java/game/engine/LevelEditor/LevelEditor.java` — editor bootstrap
+
+If you need anything added (contribution guide, examples, tests), open an issue or request specific changes.

@@ -1,15 +1,35 @@
+.idea/
 .vscode/
+.classpath
+.project
+.settings/
+/.mvn/
 
 # Maven / Java
-target/
+/target/
+**/target/
 *.class
 *.jar
 *.war
 *.ear
 
+# Build wrappers
+/.mvn/wrapper/maven-wrapper.jar
+
 # Logs and runtime files
 *.log
 *.tmp
 
-# User-specific ImGui config
+# OS files
+.DS_Store
+npm-debug.log*
+
+# ImGui user config
 imgui.ini
+
+# IDE files
+*.iml
+
+# Environment
+.env
+local.properties
