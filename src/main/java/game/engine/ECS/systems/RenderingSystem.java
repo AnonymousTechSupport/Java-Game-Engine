@@ -2,9 +2,13 @@ package game.engine.ECS.systems;
 
 import dev.dominion.ecs.api.Dominion;
 import game.engine.ECS.components.TransformComponent;
-import game.engine.ECS.components.RectangleComponent;
-import game.engine.ECS.components.BallComponent;
+import game.engine.ECS.components.RenderComponent;
 import game.engine.renderer.Renderer;
+import game.engine.render.Framebuffer;
+import game.engine.render.Camera;
+import game.engine.World;
+import game.engine.renderer.RenderContext;
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * Rendering system: iterates renderable components using Dominion ECS
@@ -17,33 +21,45 @@ public class RenderingSystem {
         this.dominion = dominion;
     }
 
+    public void renderToFramebuffer(Framebuffer framebuffer, Camera camera, World world, Renderer renderer, float deltaTime) {
+        framebuffer.bind();
+        glViewport(0, 0, framebuffer.getWidth(), framebuffer.getHeight());
+
+        // Prepare context with FBO size and delta time
+        RenderContext context = new RenderContext(framebuffer.getWidth(), framebuffer.getHeight(), deltaTime);
+
+        renderer.beginFrame(context, camera);
+        world.render(renderer); // This calls renderAll, which is fine.
+        renderer.endFrame();
+
+        framebuffer.unbind();
+    }
+
     /** Collects and immediately issues draw calls for all renderables. */
     public void renderAll(Renderer renderer) {
-        // Rectangles
-        dominion.findEntitiesWith(TransformComponent.class, RectangleComponent.class).stream()
+        // Generic render component (preferred)
+        dominion.findEntitiesWith(TransformComponent.class, RenderComponent.class).stream()
             .forEach(result -> {
                 TransformComponent tc = result.comp1();
-                RectangleComponent rc = result.comp2();
+                RenderComponent rc = result.comp2();
 
                 renderer.pushMatrix();
-                renderer.translate(tc.x, tc.y);
+                // Use JOML vectors for position/scale when calling renderer
+                renderer.translate(tc.position);
                 renderer.rotate(tc.rotation);
-                renderer.scale(tc.scaleX, tc.scaleY);
-                renderer.drawRect(0, 0, rc.width, rc.height, rc.r, rc.g, rc.b);
-                renderer.popMatrix();
-            });
+                renderer.scale(tc.scale);
 
-        // Balls
-        dominion.findEntitiesWith(TransformComponent.class, BallComponent.class).stream()
-            .forEach(result -> {
-                TransformComponent tc = result.comp1();
-                BallComponent bc = result.comp2();
+                switch (rc.type) {
+                    case RECTANGLE:
+                        renderer.drawRect(rc.position, rc.size, rc.color);
+                        break;
+                    case BALL:
+                        renderer.drawBall(rc.position, rc.radius, rc.color);
+                        break;
+                    default:
+                        break;
+                }
 
-                renderer.pushMatrix();
-                renderer.translate(tc.x, tc.y);
-                renderer.rotate(tc.rotation);
-                renderer.scale(tc.scaleX, tc.scaleY);
-                renderer.drawBall(0, 0, bc.radius, bc.r, bc.g, bc.b);
                 renderer.popMatrix();
             });
     }

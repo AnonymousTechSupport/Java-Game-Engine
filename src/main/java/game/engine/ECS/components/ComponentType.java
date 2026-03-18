@@ -2,8 +2,8 @@ package game.engine.ECS.components;
 
 public enum ComponentType {
     TRANSFORM(Category.ENGINE, TransformComponent.class),
-    RECTANGLE(Category.ENGINE, RectangleComponent.class),
-    BALL(Category.ENGINE, BallComponent.class),
+    RENDER(Category.ENGINE, RenderComponent.class),
+    CAMERA(Category.ENGINE, CameraComponent.class),
     METADATA(Category.INTERNAL, MetaDataComponent.class);
 
     /**

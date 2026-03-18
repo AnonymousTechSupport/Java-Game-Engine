@@ -27,6 +27,9 @@ public class StateManager {
     public synchronized boolean isEditor()  { return state == EngineState.EDITOR; }
     public synchronized boolean isPaused()  { return state == EngineState.PAUSED; }
 
+    /** Returns the last measured frame delta from the Time object. */
+    public float getDelta() { return time.getDelta(); }
+
     /** Set state and run enter/exit logic once. */
     public synchronized void setState(EngineState next) {
         if (next == null || this.state == next) return;

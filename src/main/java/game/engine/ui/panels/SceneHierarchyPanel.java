@@ -14,6 +14,7 @@ import game.engine.ui.services.SelectionService;
 import game.engine.ui.components.ContextMenu;
 import game.engine.ui.components.UIButton;
 import game.engine.ui.components.*;
+import game.engine.ui.components.props.ButtonProps;
 import imgui.ImGui;
 import imgui.flag.ImGuiStyleVar;
 
@@ -133,6 +134,7 @@ public class SceneHierarchyPanel extends UIComponentWithContext implements Selec
                                 selectionService.setSelected(new Selection(newId));
                             }));
                         }
+
                     });
                 });
                 ImGui.endPopup();
@@ -162,9 +164,9 @@ public class SceneHierarchyPanel extends UIComponentWithContext implements Selec
                     }
                 }
             });
-            builder.setFooter(new UIButton("Add Custom Component", (ctx) -> {
+            builder.setFooter(new UIButton(new ButtonProps("Add Custom Component", (ctx) -> {
                 // TODO: Implement logic to add a new custom component
-            }));
+            }, 0f, null)));
         });
     }
 

@@ -3,7 +3,6 @@ package game.engine;
 import game.engine.input.InputManager;
 import game.engine.renderer.Renderer;
 import game.engine.renderer.OpenGLRenderer;
-import game.engine.renderer.RenderSurface;
 import game.engine.LevelEditor.LevelEditor;
 import game.engine.logging.Logger;
 
@@ -14,7 +13,6 @@ public class GameLoop {
     private WindowHandler window;
     private InputManager input;
     private Renderer renderer;
-    private RenderSurface surface;
     private Time time;
     private World world;
     private LevelEditor editor;
@@ -32,19 +30,13 @@ public class GameLoop {
         this.stateManager = new StateManager(window, time);
         input = new InputManager(window.getHandle(), this.stateManager);
 
-        surface = new RenderSurface() {
-            @Override public int getWidth() { return window.getWidth(); }
-            @Override public int getHeight() { return window.getHeight(); }
-        };
-
-        renderer = new OpenGLRenderer(surface);
+        renderer = new OpenGLRenderer();
 
         world = new World();
-        world.initDemoEntities(window.getWidth(), window.getHeight());
-        
+
         // create shared editor and registry once
         EntityRegistry registry = new EntityRegistry(world);
-        editor = new LevelEditor(window.getHandle(), registry, this.stateManager);
+        editor = new LevelEditor(window.getHandle(), registry, this.stateManager, renderer);
     }
 
     public void run() {
@@ -72,17 +64,13 @@ public class GameLoop {
                 world.update(time.getDelta());
             }
 
-            if (renderer != null) {
-                game.engine.renderer.RenderContext ctx = new game.engine.renderer.RenderContext(
-                        window.getWidth(), window.getHeight(), time.getDelta());
-                
-                renderer.beginFrame(ctx);
-                if (world != null) world.render(renderer);
-                renderer.endFrame();
+            // Editor UI (which includes the game viewport) should always render
+            // Clear the default backbuffer before ImGui renders to avoid visual trails
+            // (we render the scene into an FBO; ImGui composes the UI onto the backbuffer).
+            if (window != null) {
+                window.render();
             }
-
-            // Editor UI should only render when in editor state
-            if (editor != null && stateManager.isEditor()) {
+            if (editor != null) {
                 editor.update();
                 editor.getUiManager().getUiEventQueue().flush();
             }
@@ -92,7 +80,8 @@ public class GameLoop {
     }
 
     /**
-     * Stops the game loop and performs cleanup for resources such as the input manager and window handler.
+     * Stops the game loop and performs cleanup for resources such as the input
+     * manager and window handler.
      */
     private void stop() {
         Logger.info(Logger.ENGINE, "Stopping engine systems...");

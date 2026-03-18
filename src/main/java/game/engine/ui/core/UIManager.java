@@ -52,6 +52,15 @@ public class UIManager {
     public UIEventQueue getUiEventQueue() {
         return uiEventQueue;
     }
+    public SelectionService getSelectionService() { return selectionService; }
+    
+    public UIContext getUIContext() {
+        return uiContext;
+    }
+    
+    public void registerComponent(UIComponent component) {
+        components.add(component);
+    }
 
     /**
      * Cancels any active inline editor managed by the UI. This is a safe operation

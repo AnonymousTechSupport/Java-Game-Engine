@@ -5,24 +5,26 @@ import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 
-import java.util.function.Consumer;
+import game.engine.ui.components.props.IconButtonProps;
 
 public class IconButton implements Widget {
 
-    private final String icon;
-    private final Consumer<UIContext> onClick;
+    private final IconButtonProps props;
 
-    public IconButton(String icon, Consumer<UIContext> onClick) {
-        this.icon = icon;
-        this.onClick = onClick;
+    public IconButton(IconButtonProps props) {
+        this.props = props;
     }
 
     @Override
     public void render(UIContext context) {
         ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, 0, 0);
         ImGui.pushStyleColor(ImGuiCol.Button, 0);
-        if (ImGui.button(icon)) {
-            onClick.accept(context);
+        if (ImGui.button(props.icon)) {
+            if (props.onClick != null) {
+                try { props.onClick.accept(context); } catch (Exception e) {
+                    game.engine.logging.Logger.error(game.engine.logging.Logger.UI, "IconButton handler failed: " + e.getMessage(), e);
+                }
+            }
         }
         ImGui.popStyleColor();
         ImGui.popStyleVar();

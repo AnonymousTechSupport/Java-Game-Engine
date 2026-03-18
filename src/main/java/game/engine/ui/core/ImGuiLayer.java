@@ -4,6 +4,8 @@ import imgui.ImGui;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.*;
 
 /**
  * A wrapper for initializing and managing the ImGui instance and its backend.
@@ -28,6 +30,14 @@ public class ImGuiLayer {
 
     public void endFrame() {
         ImGui.render();
+        // Ensure GL state expected by ImGui renderer is enabled to avoid artifacts
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_SCISSOR_TEST);
+        glActiveTexture(GL_TEXTURE0);
+
         imGuiGl3.renderDrawData(ImGui.getDrawData());
     }
 

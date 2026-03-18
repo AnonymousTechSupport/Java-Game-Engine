@@ -2,6 +2,7 @@ package game.engine.ui.components;
 
 import game.engine.ECS.components.ComponentType;
 import game.engine.ui.core.UIContext;
+import game.engine.ui.components.props.EditableLabelProps;
 import game.engine.ui.services.Selection;
 import imgui.ImGui;
 import imgui.flag.ImGuiCol;
@@ -33,7 +34,7 @@ public class EntityRow {
 
     public EntityRow(int entityId, String initialName, game.engine.ui.services.EditContext editContext, UIContext uiContext) {
         this.entityId = entityId;
-        this.editable = new EditableLabel("entity-" + entityId, initialName, editContext);
+        this.editable = new EditableLabel(new EditableLabelProps("entity-" + entityId, initialName, editContext));
         this.expanded = false;
         this.contextMenu = new ContextMenu("entity-context-menu-" + entityId);
         this.uiContext = uiContext;
@@ -106,6 +107,24 @@ public class EntityRow {
 
             ImGui.setCursorPosX(ImGui.getCursorPosX() + 3f);
             ImGui.selectable(displayName + "##sel-" + entityId, isEntitySelected, 0, 0, entityRowHeight);
+            
+            // Draw green dot if this is the main camera
+            if (uiContext.getMainCameraEntityId() == entityId) {
+                 ImVec2 itemMin = ImGui.getItemRectMin();
+                 ImVec2 itemMax = ImGui.getItemRectMax();
+                 float cx = itemMax.x - 10.0f;
+                 float cy = (itemMin.y + itemMax.y) * 0.5f;
+                 float radius = 4.0f;
+                 int green = ImGui.getColorU32(0.0f, 1.0f, 0.0f, 1.0f);
+                 ImGui.getWindowDrawList().addCircleFilled(cx, cy, radius, green, 12);
+                 // Tooltip to explain the dot
+                 if (ImGui.isItemHovered()) {
+                     ImGui.beginTooltip();
+                     ImGui.text("Main Camera");
+                     ImGui.endTooltip();
+                 }
+            }
+
             if (ImGui.isItemHovered() && ImGui.isMouseDoubleClicked(0)) editable.tryStart(entityId);
             if (ImGui.isItemClicked() && cb != null) cb.onSelect(new Selection(entityId));
         }

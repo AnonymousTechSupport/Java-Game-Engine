@@ -29,11 +29,11 @@ public class EditableLabel implements InlineEditor {
      * @param id stable identifier (used in internal ImGui ids)
      * @param initialText initial visible text
      */
-    public EditableLabel(String id, String initialText, EditContext editContext) {
-        this.id = id;
+    public EditableLabel(game.engine.ui.components.props.EditableLabelProps props) {
+        this.id = props.id;
         this.buffer = new ImString(128);
-        this.buffer.set(initialText != null ? initialText : "");
-        this.editContext = editContext;
+        this.buffer.set(props.initialText != null ? props.initialText : "");
+        this.editContext = props.editContext;
     }
 
     /** Update the visible text (used when external renames occur). */

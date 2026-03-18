@@ -24,14 +24,16 @@ public class World {
     // Map to bridge legacy integer IDs to Dominion Entities
     private final Map<Integer, dev.dominion.ecs.api.Entity> entityMap = new HashMap<>();
     private int nextEntityId = 1;
+    private int mainCameraEntityId = -1;
 
     public World() {
         this.dominion = Dominion.create();
         this.componentRegistry = new ComponentRegistry();
 
-        componentRegistry.register(ComponentType.TRANSFORM, () -> new game.engine.ECS.components.TransformComponent(0, 0));
-        componentRegistry.register(ComponentType.RECTANGLE, () -> new game.engine.ECS.components.RectangleComponent(100, 100));
-        componentRegistry.register(ComponentType.BALL, () -> new game.engine.ECS.components.BallComponent(50));
+        componentRegistry.register(ComponentType.TRANSFORM,
+                () -> new game.engine.ECS.components.TransformComponent(0, 0));
+        componentRegistry.register(ComponentType.RENDER, () -> new game.engine.ECS.components.RenderComponent());
+        componentRegistry.register(ComponentType.CAMERA, () -> new game.engine.ECS.components.CameraComponent());
         componentRegistry.register(ComponentType.METADATA, () -> new MetaDataComponent("Entity"));
 
         this.renderingSystem = new RenderingSystem(dominion);
@@ -52,20 +54,9 @@ public class World {
 
         // Store mapping from our integer id to the Dominion entity
         entityMap.put(id, entity);
-        
+
         Logger.trace(Logger.WORLD, () -> "Created entity " + id + " (" + meta.name + ")");
         return id;
-    }
-
-    /** Create a couple demo entities to exercise rendering. */
-    public void initDemoEntities(int screenWidth, int screenHeight) {
-        int e1 = createEntity("Demo Rectangle");
-        addComponent(e1, ComponentType.TRANSFORM);
-        addComponent(e1, ComponentType.RECTANGLE);
-        
-        int e2 = createEntity("Demo Ball");
-        addComponent(e2, ComponentType.TRANSFORM);
-        addComponent(e2, ComponentType.BALL);
     }
 
     /** Render all systems that produce draws. */
@@ -74,30 +65,60 @@ public class World {
         renderingSystem.renderAll(renderer);
     }
 
-    public void update(float dt) {
+    public RenderingSystem getRenderingSystem() {
+        return renderingSystem;
+    }
+
+    /**
+     * Update all systems that produce game logic changes. Currently empty since
+     * we have no dynamic behavior, but this is where physics, AI, etc. would be
+     * updated.
+     */
+    public void update(float deltaTime) {
         // TODO: Update game logic, e.g., physics, AI
     }
 
+    /**
+     * Add a component of the specified type to the entity with the given ID.
+     * 
+     * @param entityId      The integer ID of the entity to modify.
+     * @param componentType The type of component to add
+     */
     public void addComponent(int entityId, ComponentType componentType) {
         dev.dominion.ecs.api.Entity entity = entityMap.get(entityId);
-        if (entity == null) return;
+        if (entity == null)
+            return;
 
         // Prevent adding duplicate component types — Dominion ECS throws when
         // attempting to add the same component/class twice.
         if (entity.has(componentType.getComponentClass())) {
-            Logger.warn(Logger.WORLD, "Entity " + entityId + " already has component " + componentType.name() + "; skipping add.");
+            Logger.warn(Logger.WORLD,
+                    "Entity " + entityId + " already has component " + componentType.name() + "; skipping add.");
             return;
         }
 
         Component component = componentRegistry.createComponent(componentType);
         if (component != null) {
             entity.add(component);
+            // If the added component is a Camera and there is no main camera yet,
+            // set this entity as the main camera by default.
+            if (componentType == ComponentType.CAMERA && this.mainCameraEntityId == -1) {
+                Logger.info(Logger.WORLD, "First camera added on entity " + entityId + ", setting as main camera.");
+                this.mainCameraEntityId = entityId;
+            }
         }
     }
 
+    /**
+     * Remove a component of the specified type from the entity with the given ID.
+     * 
+     * @param entityId      The integer ID of the entity to modify.
+     * @param componentType The type of component to remove.
+     */
     public void removeComponent(int entityId, ComponentType componentType) {
         dev.dominion.ecs.api.Entity entity = entityMap.get(entityId);
-        if (entity == null) return;
+        if (entity == null)
+            return;
 
         // Remove by class type
         if (entity.has(componentType.getComponentClass())) {
@@ -105,14 +126,22 @@ public class World {
         }
     }
 
+    /**
+     * Retrieve all components associated with the given entity id.
+     * 
+     * @param entityId The integer ID of the entity to query.
+     * @return A map of component types to their instances.
+     */
     public Map<ComponentType, Component> getComponents(int entityId) {
         Map<ComponentType, Component> components = new HashMap<>();
         dev.dominion.ecs.api.Entity entity = entityMap.get(entityId);
-        if (entity == null) return components;
+        if (entity == null)
+            return components;
 
         for (ComponentType type : ComponentType.values()) {
-            if (type == ComponentType.METADATA) continue; // internal use usually
-            
+            if (type == ComponentType.METADATA)
+                continue; // internal use usually
+
             if (entity.has(type.getComponentClass())) {
                 // Dominion get returns the object cast to the class
                 Component c = (Component) entity.get(type.getComponentClass());
@@ -124,9 +153,17 @@ public class World {
         return components;
     }
 
+    /**
+     * Retrieve a specific component associated with the given entity id.
+     * 
+     * @param entityId      The integer ID of the entity to query.
+     * @param componentType The type of component to retrieve.
+     * @return The component instance, or null if not found.
+     */
     public Component getComponent(int entityId, ComponentType componentType) {
         dev.dominion.ecs.api.Entity entity = entityMap.get(entityId);
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
 
         if (entity.has(componentType.getComponentClass())) {
             return (Component) entity.get(componentType.getComponentClass());
@@ -134,6 +171,11 @@ public class World {
         return null;
     }
 
+    /**
+     * Retrieve an array of all available component types.
+     * 
+     * @return An array of component types.
+     */
     public ComponentType[] getAvailableComponentTypes() {
         return componentRegistry.getAvailableComponentTypes();
     }
@@ -143,40 +185,65 @@ public class World {
      * Centralizes component cleanup so callers can fully destroy an entity.
      */
     public void removeAllComponents(int entityId) {
-      Entity entity = entityMap.get(entityId);
-      if (entity != null) {
-        dominion.deleteEntity(entity);
-        entityMap.remove(entityId);
-      }
+        Entity entity = entityMap.get(entityId);
+        if (entity != null) {
+            dominion.deleteEntity(entity);
+            entityMap.remove(entityId);
+        }
         Logger.debug(Logger.WORLD, () -> "Completed cleanup for entity " + entityId);
     }
-    
+
     public Dominion getDominion() {
         return dominion;
     }
-    
-    // Helper to get name from MetaData
+
+    /**
+     * Retrieve the name of the entity with the given ID.
+     * 
+     * @param entityId The integer ID of the entity to query.
+     * @return The name of the entity, or a default name if not found.
+     */
     public String getName(int entityId) {
         Entity entity = entityMap.get(entityId);
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
         if (entity.has(MetaDataComponent.class)) {
             return entity.get(MetaDataComponent.class).name;
         }
         return "Entity " + entityId;
     }
 
+    /**
+     * Set the name of the entity with the given ID.
+     * 
+     * @param entityId The integer ID of the entity to modify.
+     * @param name     The new name for the entity.
+     */
     public void setName(int entityId, String name) {
         Entity entity = entityMap.get(entityId);
-        if (entity == null) return;
+        if (entity == null)
+            return;
         if (entity.has(MetaDataComponent.class)) {
             entity.get(MetaDataComponent.class).name = name;
         } else {
             entity.add(new MetaDataComponent(name));
         }
     }
-    
+
     /** Return underlying Dominion entity map */
     public Map<Integer, dev.dominion.ecs.api.Entity> getEntityMap() {
         return entityMap;
+    }
+
+    public int getMainCameraEntityId() {
+        return mainCameraEntityId;
+    }
+
+    public void setMainCameraEntityId(int id) {
+        this.mainCameraEntityId = id;
+    }
+
+    public void clearMainCameraEntityId() {
+        this.mainCameraEntityId = -1;
     }
 }

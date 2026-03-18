@@ -21,8 +21,14 @@ public class EntityRegistry {
     public EntityRegistry(World world) {
         this.world = world;
     }
+    
+    public World getWorld() {
+        return world;
+    }
 
-    /** Create a named entity and return an Entity object, or null on failure. */
+    /** Create a named entity and return an Entity object, or null on failure. 
+     * @return Entity object with id and name, or null if creation failed
+    */
     public Entity createEntity(String name) {
         int id = world.createEntity(name);
         // Assuming creation always succeeds with Dominion unless OOM
@@ -109,5 +115,13 @@ public class EntityRegistry {
 
     public ComponentType[] getAvailableComponentTypes() {
         return world.getAvailableComponentTypes();
+    }
+    
+    public int getMainCameraEntityId() {
+        return world.getMainCameraEntityId();
+    }
+    
+    public void setMainCameraEntityId(int id) {
+        world.setMainCameraEntityId(id);
     }
 }

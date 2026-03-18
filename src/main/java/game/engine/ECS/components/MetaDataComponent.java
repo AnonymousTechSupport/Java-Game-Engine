@@ -16,9 +16,12 @@ public class MetaDataComponent implements Component {
 
     @Override
     public void renderInspector() {
-        ImString nameValue = new ImString(name, 256);
-        if (ImGui.inputText("Name", nameValue)) {
-            name = nameValue.get();
+        // Persistent buffer so clicking into the name field is immediate
+        if (nameBuffer == null) nameBuffer = new imgui.type.ImString(name, 256);
+        if (ImGui.inputText("Name", nameBuffer)) {
+            name = nameBuffer.get();
         }
     }
+
+    private transient imgui.type.ImString nameBuffer;
 }

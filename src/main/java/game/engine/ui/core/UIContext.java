@@ -3,6 +3,7 @@ package game.engine.ui.core;
 import game.engine.ECS.components.Component;
 import game.engine.ECS.components.ComponentType;
 import game.engine.ui.services.UIEventQueue;
+import game.engine.ui.services.SelectionService;
 import game.engine.EntityRegistry;
 
 import java.util.Map;
@@ -16,10 +17,12 @@ public class UIContext {
 
     private final UIEventQueue eventQueue;
     private final EntityRegistry entityRegistry;
+    private final SelectionService selectionService;
 
     public UIContext(UIEventQueue eventQueue, EntityRegistry entityRegistry) {
         this.eventQueue = eventQueue;
         this.entityRegistry = entityRegistry;
+        this.selectionService = null; // UIContext doesn't create selection service; UIManager owns it
     }
 
     /**
@@ -99,7 +102,15 @@ public class UIContext {
     public void deferDestroyEntity(int entityId) {
         defer(() -> entityRegistry.destroyEntity(entityId));
     }
-
+    
+    public int getMainCameraEntityId() {
+        return entityRegistry.getMainCameraEntityId();
+    }
+    
+    public void setMainCameraEntityId(int id) {
+        entityRegistry.setMainCameraEntityId(id);
+    }
+    
     /**
      * Provides direct access to the EntityRegistry for read-only operations. Mutation operations should be performed
      * via the provided defer* methods to ensure thread safety.
@@ -108,4 +119,6 @@ public class UIContext {
     EntityRegistry getEntityRegistry() {
         return entityRegistry;
     }
+
+    public SelectionService getSelectionService() { return selectionService; }
 }
